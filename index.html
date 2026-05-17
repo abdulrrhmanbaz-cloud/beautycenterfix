@@ -858,10 +858,12 @@ function copyField(spanId, btnId) {
 }
 
 /* ═══════════════════════════════════
-   BOOKING SUBMIT — linked to Admin without changing design
-   Shared storage key: lx_bookings
+   BOOKING SUBMIT — connected to Google Sheet
+   Same design / no visual changes
 ═══════════════════════════════════ */
-document.getElementById('booking-form').addEventListener('submit', function(e) {
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3wAkzPXE3_TfOk_61uMny4OoU4iQJhAZV_8jwzHsFdN_7q8ZRKz1nQ3gA7tfTzeE/exec';
+
+document.getElementById('booking-form').addEventListener('submit', async function(e) {
   e.preventDefault();
 
   if (!document.getElementById('selected-time').value) {
@@ -875,7 +877,7 @@ document.getElementById('booking-form').addEventListener('submit', function(e) {
   }
 
   const booking = {
-    id: Date.now(),
+    id: Date.now().toString(),
     name: document.getElementById('inp-name').value.trim(),
     email: document.getElementById('inp-email').value.trim(),
     phone: document.getElementById('inp-phone').value.trim(),
@@ -894,26 +896,51 @@ document.getElementById('booking-form').addEventListener('submit', function(e) {
     return;
   }
 
-  const bookings = JSON.parse(localStorage.getItem('lx_bookings') || '[]');
-  bookings.unshift(booking);
-  localStorage.setItem('lx_bookings', JSON.stringify(bookings));
+  const submitBtn = this.querySelector('button[type="submit"]');
+  const oldText = submitBtn ? submitBtn.textContent : '';
 
-  const successText = lang === 'ar'
-    ? `شكرًا ${booking.name}! تم استلام حجزك وسيظهر في لوحة الأدمن.`
-    : `Thank you, ${booking.name}! Your booking was received and it will appear in the admin dashboard.`;
+  try {
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = lang === 'ar' ? 'جاري الإرسال...' : 'Sending...';
+    }
 
-  document.getElementById('success-text').textContent = successText;
-  document.getElementById('booking-form-wrap').style.display = 'none';
-  document.getElementById('success-msg').style.display = 'block';
+    const body = new URLSearchParams();
+    Object.keys(booking).forEach(key => body.append(key, booking[key] || ''));
 
-  this.reset();
-  document.getElementById('selected-time').value = '';
-  document.getElementById('selected-payment').value = '';
-  selectedPayment = '';
-  document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
-  document.querySelectorAll('.pay-card').forEach(c => c.classList.remove('selected'));
-  document.getElementById('panel-instapay').style.display = 'none';
-  document.getElementById('panel-cash').style.display = 'none';
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body
+    });
+
+    const successText = lang === 'ar'
+      ? `شكرًا ${booking.name}! تم استلام حجزك وسيظهر في لوحة الأدمن.`
+      : `Thank you, ${booking.name}! Your booking was received and it will appear in the admin dashboard.`;
+
+    document.getElementById('success-text').textContent = successText;
+    document.getElementById('booking-form-wrap').style.display = 'none';
+    document.getElementById('success-msg').style.display = 'block';
+
+    this.reset();
+    document.getElementById('selected-time').value = '';
+    document.getElementById('selected-payment').value = '';
+    selectedPayment = '';
+    document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+    document.querySelectorAll('.pay-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('panel-instapay').style.display = 'none';
+    document.getElementById('panel-cash').style.display = 'none';
+
+  } catch (error) {
+    console.error(error);
+    alert(lang === 'ar' ? 'حدث خطأ أثناء إرسال الحجز.' : 'There was an error sending the booking.');
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = oldText;
+    }
+  }
 });
 
 /* ═══════════════════════════════════
@@ -924,55 +951,5 @@ try {
   if (saved === 'ar') setLang('ar');
 } catch(e) {}
 </script>
-
-<script>
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyHimN4WBIjMlIF8p0wUDeUv1R6K5xvL-xGnvfradBvNo2TGE6XqLZXPQnCx83XTaEp/exec';
-(function(){
-  const form = document.getElementById('booking-form');
-  if (!form) return;
-  form.addEventListener('submit', async function(e){
-    e.preventDefault();
-
-    const booking = {
-      id: Date.now().toString(),
-      name: document.getElementById('inp-name')?.value?.trim() || '',
-      firstName: document.getElementById('inp-name')?.value?.trim() || '',
-      email: document.getElementById('inp-email')?.value?.trim() || '',
-      phone: document.getElementById('inp-phone')?.value?.trim() || '',
-      service: document.getElementById('inp-service')?.value || '',
-      date: document.getElementById('booking-date')?.value || '',
-      time: document.getElementById('selected-time')?.value || '',
-      payment: document.getElementById('selected-payment')?.value || window.selectedPayment || '',
-      paymentMethod: document.getElementById('selected-payment')?.value || window.selectedPayment || '',
-      status: 'pending',
-      notes: '',
-      createdAt: new Date().toISOString()
-    };
-
-    const body = new URLSearchParams();
-    Object.keys(booking).forEach(k => body.append(k, booking[k] || ''));
-
-    try {
-      await fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body
-      });
-
-      const success = document.getElementById('success-msg');
-      const wrap = document.getElementById('booking-form-wrap');
-      const txt = document.getElementById('success-text');
-      if (txt) txt.textContent = 'Booking received successfully.';
-      if (wrap) wrap.style.display = 'none';
-      if (success) success.style.display = 'block';
-    } catch(err) {
-      console.error(err);
-      alert('Booking could not be sent.');
-    }
-  }, true);
-})();
-</script>
-
 </body>
 </html>
