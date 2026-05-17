@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luxe Beauty Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold:#c9964a; --gold-light:#e8c48a; --gold-pale:#f5e6cc;
+  --cream:#fdf6ee; --warm:#fffdf9; --rose:#d4847a;
+  --dark:#1e1512; --dark-mid:#3a2e27;
+  --text:#5c4a3a; --text-light:#8a7060;
+  --shadow:rgba(30,21,18,.12);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--warm);overflow-x:hidden}
+html[lang=ar] body{font-family:'Tajawal',sans-serif}
+h1,h2,h3,h4{font-family:'Cormorant Garamond',serif;color:var(--dark)}
+html[lang=ar] h1,html[lang=ar] h2,html[lang=ar] h3,html[lang=ar] h4{font-family:'Tajawal',sans-serif;font-weight:700}
+
+/* animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes pulseRing{0%{transform:scale(1);opacity:1}100%{transform:scale(1.6);opacity:0}}
+@keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+
+/* reveal */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* ── LANG TOGGLE ── */
+.lang-toggle{display:flex;align-items:center;background:rgba(201,150,74,.1);border:1px solid rgba(201,150,74,.3);border-radius:30px;padding:3px;gap:2px}
+.lang-btn{padding:5px 14px;border-radius:22px;font-size:.78rem;font-weight:600;transition:background .25s,color .25s;color:var(--text-light);cursor:pointer;border:none;background:transparent;font-family:inherit}
+.lang-btn.active{background:var(--gold);color:#fff;box-shadow:0 2px 8px rgba(201,150,74,.4)}
+
+/* ── NAV ── */
+header{position:fixed;top:0;width:100%;z-index:1000;background:rgba(253,246,238,.93);backdrop-filter:blur(12px);border-bottom:1px solid rgba(201,150,74,.15);transition:box-shadow .3s}
+header.scrolled{box-shadow:0 4px 24px var(--shadow)}
+.navbar{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;padding:1.1rem 5%;gap:1rem}
+.logo{font-family:'Cormorant Garamond',serif;font-size:1.7rem;font-weight:600;color:var(--gold);letter-spacing:2px;white-space:nowrap}
+.logo span{font-style:italic;font-weight:300}
+html[lang=ar] .logo{font-family:'Tajawal',sans-serif;letter-spacing:0}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{font-size:.82rem;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--text);position:relative;transition:color .3s}
+html[lang=ar] .nav-links a{text-transform:none;letter-spacing:0;font-size:.9rem}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1.5px;background:var(--gold);transition:width .3s}
+html[lang=ar] .nav-links a::after{left:auto;right:0}
+.nav-links a:hover{color:var(--gold)}
+.nav-links a:hover::after{width:100%}
+.nav-right{display:flex;align-items:center;gap:1rem}
+.btn-book{background:var(--gold);color:#fff;padding:10px 24px;border-radius:30px;font-size:.82rem;font-weight:500;letter-spacing:1px;text-transform:uppercase;transition:background .3s,transform .2s;box-shadow:0 4px 16px rgba(201,150,74,.35);white-space:nowrap}
+html[lang=ar] .btn-book{text-transform:none;letter-spacing:0;font-size:.9rem}
+.btn-book:hover{background:#b07c35;transform:translateY(-1px)}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer}
+.hamburger span{width:24px;height:2px;background:var(--dark);display:block;transition:.3s}
+
+/* ── HERO ── */
+.hero{min-height:100vh;background:linear-gradient(160deg,rgba(30,21,18,.55),rgba(30,21,18,.25)),url('https://images.unsplash.com/photo-1560750588-73207b1ef5b8?auto=format&fit=crop&w=1600&q=85') center/cover;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 20px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(201,150,74,.18),transparent 60%)}
+.hero-badge{display:inline-block;border:1px solid rgba(232,196,138,.6);color:var(--gold-light);font-size:.72rem;letter-spacing:3px;text-transform:uppercase;padding:7px 20px;border-radius:30px;margin-bottom:1.5rem;animation:fadeIn 1s ease both}
+html[lang=ar] .hero-badge{letter-spacing:0;font-size:.85rem}
+.hero-content h1{font-size:clamp(2.8rem,6vw,5rem);color:#fff;line-height:1.15;margin-bottom:1.4rem;animation:fadeUp 1s ease .2s both}
+.hero-content h1 em{font-style:italic;font-weight:300;color:var(--gold-light)}
+html[lang=ar] .hero-content h1 em{font-style:normal}
+.hero-content>p{font-size:1.05rem;color:rgba(255,255,255,.85);max-width:540px;margin:0 auto 2.5rem;line-height:1.75;animation:fadeUp 1s ease .4s both}
+.hero-actions{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;animation:fadeUp 1s ease .6s both}
+.btn-hero{background:var(--gold);color:#fff;padding:16px 40px;border-radius:40px;font-size:.88rem;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;border:none;cursor:pointer;transition:transform .2s,box-shadow .3s;box-shadow:0 8px 28px rgba(201,150,74,.45);font-family:inherit}
+html[lang=ar] .btn-hero{text-transform:none;letter-spacing:0;font-size:1rem}
+.btn-hero:hover{transform:scale(1.04);box-shadow:0 12px 36px rgba(201,150,74,.55)}
+.btn-hero-outline{background:transparent;color:#fff;padding:16px 40px;border-radius:40px;font-size:.88rem;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;border:1.5px solid rgba(255,255,255,.5);cursor:pointer;transition:border-color .3s,background .3s;font-family:inherit}
+html[lang=ar] .btn-hero-outline{text-transform:none;letter-spacing:0;font-size:1rem}
+.btn-hero-outline:hover{border-color:#fff;background:rgba(255,255,255,.1)}
+.hero-scroll{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;color:rgba(255,255,255,.6);font-size:.7rem;letter-spacing:2px;text-transform:uppercase;animation:float 2.5s ease-in-out infinite}
+.hero-scroll::after{content:'';width:1px;height:40px;background:linear-gradient(to bottom,rgba(255,255,255,.5),transparent)}
+
+/* ── SECTION COMMON ── */
+.section-label{font-size:.72rem;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-family:'DM Sans',sans-serif;margin-bottom:.6rem}
+html[lang=ar] .section-label{font-family:'Tajawal',sans-serif;letter-spacing:0;font-size:.85rem}
+.section-header h2{font-size:clamp(2rem,4vw,2.8rem);line-height:1.2;margin-bottom:1rem}
+.section-header p{color:var(--text-light);max-width:520px;line-height:1.75}
+.divider{width:50px;height:2px;background:linear-gradient(to right,var(--gold),var(--gold-light));margin:1.2rem 0}
+.divider.center{margin:1.2rem auto}
+
+/* ── SERVICES ── */
+.services{padding:6rem 5%;max-width:1200px;margin:0 auto}
+.services .section-header{text-align:center}
+.services .section-header p{margin:0 auto}
+.services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1.5rem;margin-top:3.5rem}
+.service-card{background:var(--warm);border:1px solid rgba(201,150,74,.15);border-radius:16px;padding:2rem 1.6rem;text-align:center;transition:transform .35s,box-shadow .35s,border-color .35s;position:relative;overflow:hidden}
+.service-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(to right,var(--gold),var(--rose));opacity:0;transition:opacity .35s}
+.service-card:hover{transform:translateY(-8px);box-shadow:0 16px 40px var(--shadow);border-color:var(--gold-light)}
+.service-card:hover::before{opacity:1}
+.service-icon{font-size:2.2rem;margin-bottom:1rem;display:block}
+.service-card h3{font-size:1.2rem;margin-bottom:.6rem}
+.service-card p{font-size:.88rem;color:var(--text-light);line-height:1.7}
+.service-price{display:inline-block;margin-top:1rem;font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--gold);font-weight:600}
+html[lang=ar] .service-price{font-family:'Tajawal',sans-serif}
+
+/* ── PRICING ── */
+.pricing{background:var(--cream);padding:6rem 5%}
+.pricing-inner{max-width:1100px;margin:0 auto}
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2rem;margin-top:3rem}
+.pricing-card{background:var(--warm);border-radius:20px;padding:2.2rem;border:1px solid rgba(201,150,74,.18);transition:transform .3s,box-shadow .3s}
+.pricing-card:hover{transform:translateY(-5px);box-shadow:0 12px 36px var(--shadow)}
+.pricing-card.featured{background:var(--dark);border-color:var(--gold)}
+.pricing-card.featured h3,.pricing-card.featured .price-item span{color:#fff}
+.pricing-card.featured .price-item{border-color:rgba(255,255,255,.08)}
+.pricing-card.featured .price-item .price{color:var(--gold-light)}
+.pricing-card.featured .price-cat{color:var(--gold)}
+.price-cat{font-size:.72rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:.4rem}
+html[lang=ar] .price-cat{letter-spacing:0;font-size:.82rem}
+.pricing-card h3{font-size:1.5rem;margin-bottom:1.4rem}
+.price-item{display:flex;justify-content:space-between;align-items:center;padding:.75rem 0;border-bottom:1px solid rgba(201,150,74,.1)}
+.price-item span{font-size:.9rem;color:var(--text)}
+.price-item .price{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--gold);font-weight:600}
+html[lang=ar] .price-item .price{font-family:'Tajawal',sans-serif}
+
+/* ── GALLERY ── */
+.gallery{padding:6rem 5%;max-width:1200px;margin:0 auto}
+.gallery .section-header{margin-bottom:3rem}
+.gallery-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:1rem}
+.gallery-item{overflow:hidden;border-radius:12px;position:relative;cursor:pointer}
+.gallery-item::after{content:'✦';position:absolute;inset:0;background:rgba(30,21,18,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.5rem;opacity:0;transition:opacity .3s}
+.gallery-item:hover::after{opacity:1}
+.gallery-item img{width:100%;height:100%;object-fit:cover;transition:transform .5s;display:block}
+.gallery-item:hover img{transform:scale(1.06)}
+.g1{grid-column:1/6;height:280px}.g2{grid-column:6/9;height:280px}.g3{grid-column:9/13;height:280px}
+.g4{grid-column:1/5;height:240px}.g5{grid-column:5/9;height:240px}.g6{grid-column:9/13;height:240px}
+
+/* ── ABOUT ── */
+.about{padding:6rem 5%;background:var(--cream)}
+.about-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center}
+.about-img-wrap{position:relative}
+.about-img-wrap img{width:100%;border-radius:16px;box-shadow:0 20px 50px var(--shadow)}
+.about-badge{position:absolute;bottom:-20px;right:-20px;background:var(--gold);color:#fff;border-radius:50%;width:110px;height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px;box-shadow:0 8px 24px rgba(201,150,74,.45);font-family:'Cormorant Garamond',serif}
+html[lang=ar] .about-badge{right:auto;left:-20px;font-family:'Tajawal',sans-serif}
+.about-badge strong{font-size:2rem;line-height:1}
+.about-badge span{font-size:.65rem;letter-spacing:1px;text-transform:uppercase}
+html[lang=ar] .about-badge span{letter-spacing:0;font-size:.7rem}
+.about-text h2{font-size:2.4rem;margin-bottom:1.2rem}
+.about-text p{line-height:1.85;color:var(--text-light);margin-bottom:1rem}
+.features-list{margin-top:1.5rem;display:flex;flex-direction:column;gap:.8rem}
+.feature-item{display:flex;align-items:center;gap:.8rem;font-size:.9rem}
+.feature-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);flex-shrink:0}
+
+/* ── TESTIMONIALS ── */
+.testimonials{padding:6rem 5%}
+.testimonials-inner{max-width:1100px;margin:0 auto}
+.testimonials .section-header{text-align:center;margin-bottom:3rem}
+.testimonials .section-header p{margin:0 auto}
+.testimonials-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem}
+.testi-card{background:var(--warm);border:1px solid rgba(201,150,74,.15);border-radius:16px;padding:2rem;transition:transform .3s,box-shadow .3s}
+.testi-card:hover{transform:translateY(-5px);box-shadow:0 12px 32px var(--shadow)}
+.stars{color:var(--gold);font-size:.9rem;letter-spacing:2px;margin-bottom:1rem}
+.testi-text{font-family:'Cormorant Garamond',serif;font-size:1.1rem;line-height:1.75;font-style:italic;color:var(--dark-mid);margin-bottom:1.5rem}
+html[lang=ar] .testi-text{font-family:'Tajawal',sans-serif;font-style:normal;font-size:1rem}
+.testi-author{display:flex;align-items:center;gap:.8rem}
+.testi-avatar{width:42px;height:42px;border-radius:50%;background:var(--gold-pale);display:flex;align-items:center;justify-content:center;font-size:1rem;border:2px solid var(--gold-light)}
+.testi-name{font-weight:500;font-size:.9rem;color:var(--dark)}
+.testi-meta{font-size:.78rem;color:var(--text-light)}
+
+/* ── BOOKING ── */
+.booking{padding:6rem 5%;background:var(--dark);position:relative;overflow:hidden}
+.booking::before{content:'';position:absolute;top:-100px;right:-100px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(201,150,74,.15),transparent 70%)}
+.booking-inner{max-width:700px;margin:0 auto;position:relative;z-index:1;text-align:center}
+.booking-inner .section-label{color:var(--gold-light)}
+.booking-inner h2{color:#fff;font-size:2.5rem;margin-bottom:.5rem}
+.booking-inner>.booking-desc{color:rgba(255,255,255,.6);margin-bottom:2.5rem;line-height:1.7}
+.booking-form{background:rgba(255,255,255,.05);border:1px solid rgba(201,150,74,.2);border-radius:20px;padding:2.5rem;text-align:left;backdrop-filter:blur(6px)}
+html[lang=ar] .booking-form{text-align:right}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.form-group{margin-bottom:1.2rem}
+.form-group label{display:block;margin-bottom:.5rem;font-size:.78rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.6)}
+html[lang=ar] .form-group label{letter-spacing:0;font-size:.85rem}
+.form-group input,.form-group select{width:100%;padding:13px 16px;background:rgba(255,255,255,.07);border:1px solid rgba(201,150,74,.25);border-radius:8px;color:#fff;font-family:inherit;font-size:.92rem;transition:border-color .3s}
+.form-group input::placeholder{color:rgba(255,255,255,.3)}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--gold)}
+.form-group select option{background:var(--dark-mid);color:#fff}
+
+/* time slots */
+.time-slots{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.3rem}
+.time-slot{padding:8px 14px;border-radius:6px;border:1px solid rgba(201,150,74,.25);background:rgba(255,255,255,.05);color:rgba(255,255,255,.7);font-size:.82rem;cursor:pointer;transition:background .2s,border-color .2s,color .2s;user-select:none}
+.time-slot:hover{border-color:var(--gold);color:var(--gold-light)}
+.time-slot.selected{background:var(--gold);border-color:var(--gold);color:#fff;font-weight:500}
+.time-slot.disabled{opacity:.3;cursor:not-allowed;pointer-events:none}
+
+/* ── PAYMENT ── */
+.pay-options{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:.3rem}
+.pay-card{border:1.5px solid rgba(201,150,74,.25);border-radius:12px;padding:1rem;cursor:pointer;display:flex;align-items:center;gap:.75rem;background:rgba(255,255,255,.04);transition:border-color .25s,background .25s;user-select:none}
+.pay-card:hover{border-color:rgba(201,150,74,.6);background:rgba(201,150,74,.06)}
+.pay-card.selected{border-color:var(--gold);background:rgba(201,150,74,.12)}
+.pay-card-icon{font-size:1.6rem;flex-shrink:0}
+.pay-card-info strong{display:block;font-size:.9rem;color:#fff;font-weight:500}
+.pay-card-info small{font-size:.75rem;color:rgba(255,255,255,.5)}
+
+/* instapay panel */
+.pay-panel{margin-top:1rem;border-radius:12px;overflow:hidden;border:1px solid rgba(201,150,74,.3);animation:slideDown .35s ease both}
+.ip-header{background:linear-gradient(135deg,#7B2D8B,#4A1D96);padding:1rem 1.2rem;display:flex;align-items:center;gap:.8rem}
+.ip-logo{background:#fff;border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:900;color:#7B2D8B;flex-shrink:0;font-family:'DM Sans',sans-serif}
+.ip-header-text strong{color:#fff;font-size:.95rem;display:block}
+.ip-header-text small{color:rgba(255,255,255,.7);font-size:.75rem}
+.ip-body{background:rgba(255,255,255,.04);padding:1.2rem}
+.ip-field{margin-bottom:.9rem}
+.ip-field:last-of-type{margin-bottom:0}
+.ip-field label{font-size:.68rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);display:block;margin-bottom:.3rem}
+html[lang=ar] .ip-field label{letter-spacing:0;font-size:.75rem}
+.ip-value{display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.07);border-radius:8px;padding:.7rem .9rem;border:1px solid rgba(201,150,74,.15)}
+.ip-value span{color:#fff;font-size:.92rem}
+.copy-btn{background:rgba(201,150,74,.2);border:none;border-radius:5px;color:var(--gold-light);font-size:.72rem;padding:4px 10px;cursor:pointer;transition:background .2s;font-family:inherit}
+.copy-btn:hover{background:rgba(201,150,74,.4)}
+.ip-note{margin-top:1rem;padding:.75rem 1rem;background:rgba(201,150,74,.08);border-radius:8px;border-left:3px solid var(--gold);font-size:.8rem;color:rgba(255,255,255,.65);line-height:1.65}
+html[lang=ar] .ip-note{border-left:none;border-right:3px solid var(--gold)}
+
+/* cash panel */
+.cash-panel{margin-top:1rem;border-radius:12px;border:1px solid rgba(201,150,74,.3);background:rgba(255,255,255,.04);padding:1.2rem;animation:slideDown .35s ease both}
+.cash-panel .cash-icon{font-size:2rem;display:block;margin-bottom:.6rem}
+.cash-panel p{font-size:.88rem;color:rgba(255,255,255,.7);line-height:1.7}
+
+/* submit */
+.btn-submit{width:100%;background:var(--gold);color:#fff;padding:16px;border:none;border-radius:10px;font-size:.9rem;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;margin-top:.5rem;transition:background .3s,transform .2s;box-shadow:0 6px 20px rgba(201,150,74,.4);font-family:inherit}
+html[lang=ar] .btn-submit{text-transform:none;letter-spacing:0;font-size:1rem}
+.btn-submit:hover{background:#b07c35;transform:translateY(-1px)}
+
+/* success */
+.success-msg{display:none;text-align:center;padding:2rem;color:#fff}
+.success-msg .check{font-size:3rem;margin-bottom:1rem}
+.success-msg h3{font-size:1.8rem;color:var(--gold-light);margin-bottom:.5rem}
+.success-msg p{color:rgba(255,255,255,.7);line-height:1.7}
+
+/* ── WHATSAPP FAB ── */
+.wa-fab{position:fixed;bottom:28px;right:28px;width:58px;height:58px;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(37,211,102,.45);z-index:999;text-decoration:none;transition:transform .2s;animation:fadeIn 1s ease 2s both}
+.wa-fab:hover{transform:scale(1.1)}
+.wa-fab::before{content:'';position:absolute;width:58px;height:58px;border-radius:50%;background:rgba(37,211,102,.35);animation:pulseRing 2s ease-out infinite}
+.wa-fab svg{width:28px;height:28px;fill:#fff;position:relative;z-index:1}
+.wa-tooltip{position:absolute;right:68px;white-space:nowrap;background:var(--dark);color:#fff;font-size:.78rem;padding:6px 12px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .2s}
+html[lang=ar] .wa-tooltip{right:auto;left:68px}
+.wa-fab:hover .wa-tooltip{opacity:1}
+
+/* ── FOOTER ── */
+footer{background:#130e0a;color:rgba(255,255,255,.6);padding:4rem 5% 2rem}
+.footer-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:3rem;padding-bottom:3rem;border-bottom:1px solid rgba(255,255,255,.06)}
+.footer-brand .logo{font-size:1.5rem;display:block;margin-bottom:1rem}
+.footer-brand p{font-size:.88rem;line-height:1.75;max-width:240px}
+.footer-col h4{color:var(--gold);font-family:'DM Sans',sans-serif;font-size:.75rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:1rem}
+html[lang=ar] .footer-col h4{font-family:'Tajawal',sans-serif;letter-spacing:0;font-size:.88rem}
+.footer-col p,.footer-col a{font-size:.88rem;color:rgba(255,255,255,.5);display:block;margin-bottom:.5rem;transition:color .2s}
+.footer-col a:hover{color:var(--gold-light)}
+.copyright{max-width:1200px;margin:0 auto;padding-top:1.5rem;text-align:center;font-size:.78rem;color:rgba(255,255,255,.25)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .about-inner{grid-template-columns:1fr;gap:2.5rem}
+  .about-badge{display:none}
+  .footer-inner{grid-template-columns:1fr 1fr}
+}
+@media(max-width:768px){
+  .nav-links,.btn-book{display:none}
+  .hamburger{display:flex}
+  .nav-links.open{display:flex;flex-direction:column;position:absolute;top:100%;left:0;right:0;background:var(--cream);padding:1.5rem 5%;border-top:1px solid rgba(201,150,74,.15);gap:1.2rem}
+  .gallery-grid{display:flex;flex-direction:column}
+  .gallery-item{height:200px}
+  .form-row{grid-template-columns:1fr}
+  .pay-options{grid-template-columns:1fr}
+  .footer-inner{grid-template-columns:1fr;gap:2rem}
+  .hero-content h1{font-size:2.4rem}
+}
+</style>
+</head>
+<body>
+
+<!-- WhatsApp FAB -->
+<a href="https://wa.me/201XXXXXXXXX?text=مرحبا،%20أود%20حجز%20موعد" class="wa-fab" target="_blank" rel="noopener">
+  <span class="wa-tooltip" data-en="Book via WhatsApp" data-ar="احجزي عبر واتساب">Book via WhatsApp</span>
+  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
+
+<!-- Header -->
+<header id="main-header">
+  <nav class="navbar">
+    <div class="logo">Luxe <span>Beauty</span></div>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="#home"     data-en="Home"        data-ar="الرئيسية">Home</a></li>
+      <li><a href="#services" data-en="Services"    data-ar="خدماتنا">Services</a></li>
+      <li><a href="#gallery"  data-en="Gallery"     data-ar="معرض الصور">Gallery</a></li>
+      <li><a href="#pricing"  data-en="Pricing"     data-ar="الأسعار">Pricing</a></li>
+      <li><a href="#about"    data-en="About"       data-ar="عنّا">About</a></li>
+      <li><a href="#contact"  data-en="Contact"     data-ar="تواصلي معنا">Contact</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="lang-toggle">
+        <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+        <button class="lang-btn"        id="btn-ar" onclick="setLang('ar')">ع</button>
+      </div>
+      <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+        <span></span><span></span><span></span>
+      </div>
+      <a href="#booking" class="btn-book" data-en="Book Now" data-ar="احجزي الآن">Book Now</a>
+    </div>
+  </nav>
+</header>
+
+<!-- Hero -->
+<section id="home" class="hero">
+  <div class="hero-content">
+    <div class="hero-badge" data-en="✦ Premium Beauty & Wellness ✦" data-ar="✦ جمال وعناية فائقة ✦">✦ Premium Beauty & Wellness ✦</div>
+    <h1 data-en="Reveal Your<br><em>Inner Radiance</em>" data-ar="اكتشفي<br><em>جمالك الحقيقي</em>">Reveal Your<br><em>Inner Radiance</em></h1>
+    <p data-en="Experience premium skincare, luxurious hair styling, and wellness treatments in Cairo's most serene sanctuary."
+       data-ar="استمتعي بأفضل علاجات العناية بالبشرة والشعر وجلسات الاسترخاء في أرقى صالون بالقاهرة.">
+      Experience premium skincare, luxurious hair styling, and wellness treatments in Cairo's most serene sanctuary.
+    </p>
+    <div class="hero-actions">
+      <button class="btn-hero" onclick="document.getElementById('booking').scrollIntoView({behavior:'smooth'})"
+        data-en="Book Appointment" data-ar="احجزي موعدك">Book Appointment</button>
+      <button class="btn-hero-outline" onclick="document.getElementById('services').scrollIntoView({behavior:'smooth'})"
+        data-en="Explore Services" data-ar="اكتشفي خدماتنا">Explore Services</button>
+    </div>
+  </div>
+  <div class="hero-scroll" data-en="Scroll" data-ar="اسحبي">Scroll</div>
+</section>
+
+<!-- Services -->
+<section id="services" class="services">
+  <div class="section-header reveal">
+    <p class="section-label" data-en="What We Offer" data-ar="ما نقدّمه">What We Offer</p>
+    <h2 data-en="Curated Beauty Experiences" data-ar="تجارب جمال مميّزة">Curated Beauty Experiences</h2>
+    <div class="divider center"></div>
+    <p data-en="Every treatment is crafted with care, using only organic and cruelty-free products."
+       data-ar="كل علاج يُقدَّم باحترافية تامة باستخدام منتجات طبيعية وآمنة تمامًا.">Every treatment is crafted with care, using only organic and cruelty-free products.</p>
+  </div>
+  <div class="services-grid">
+    <div class="service-card reveal">
+      <span class="service-icon">💆‍♀️</span>
+      <h3 data-en="Facial Treatments" data-ar="علاجات البشرة">Facial Treatments</h3>
+      <p data-en="Rejuvenate your skin with our organic facials designed to deeply hydrate and restore natural glow."
+         data-ar="أعيدي إشراق بشرتك مع جلسات العناية العضوية المُرطِّبة والمُجدِّدة للحيوية.">Rejuvenate your skin with our organic facials designed to deeply hydrate and restore natural glow.</p>
+      <span class="service-price" data-en="From 250 EGP" data-ar="يبدأ من ٢٥٠ جنيه">From 250 EGP</span>
+    </div>
+    <div class="service-card reveal">
+      <span class="service-icon">💇‍♀️</span>
+      <h3 data-en="Hair Styling" data-ar="تصفيف الشعر">Hair Styling</h3>
+      <p data-en="From expert cuts to vibrant color — our stylists craft the look you've always envisioned."
+         data-ar="من الحلاقة الاحترافية إلى الصباغة المميزة — متخصصاتنا يحققن لكِ الإطلالة التي تحلمين بها.">From expert cuts to vibrant color — our stylists craft the look you've always envisioned.</p>
+      <span class="service-price" data-en="From 180 EGP" data-ar="يبدأ من ١٨٠ جنيه">From 180 EGP</span>
+    </div>
+    <div class="service-card reveal">
+      <span class="service-icon">💅</span>
+      <h3 data-en="Nail Care" data-ar="العناية بالأظافر">Nail Care</h3>
+      <p data-en="Manicures and pedicures using premium polishes, with relaxing hand and foot treatments."
+         data-ar="مانيكير وباديكير بأجود أنواع الطلاء مع جلسات استرخاء ليدَيكِ وقدَمَيكِ.">Manicures and pedicures using premium polishes, with relaxing hand and foot treatments.</p>
+      <span class="service-price" data-en="From 120 EGP" data-ar="يبدأ من ١٢٠ جنيه">From 120 EGP</span>
+    </div>
+    <div class="service-card reveal">
+      <span class="service-icon">🧖‍♀️</span>
+      <h3 data-en="Sauna Bath" data-ar="الساونا">Sauna Bath</h3>
+      <p data-en="Melt away tension with our deep muscle relaxation and revitalizing steam treatments."
+         data-ar="تخلّصي من التوتر وجدّدي نشاطك مع جلسات الساونا والبخار المُرمِّمة للجسم.">Melt away tension with our deep muscle relaxation and revitalizing steam treatments.</p>
+      <span class="service-price" data-en="From 350 EGP" data-ar="يبدأ من ٣٥٠ جنيه">From 350 EGP</span>
+    </div>
+    <div class="service-card reveal">
+      <span class="service-icon">🛁</span>
+      <h3 data-en="Moroccan Bath" data-ar="الحمام المغربي">Moroccan Bath</h3>
+      <p data-en="Indulge in the ancient art of hammam — traditional steam, kessa exfoliation, and argan oil rituals."
+         data-ar="استمتعي بتجربة الحمام المغربي الأصيل — بخار، كيس تقشير، وزيت الأرغان الفاخر.">Indulge in the ancient art of hammam — traditional steam, kessa exfoliation, and argan oil rituals.</p>
+      <span class="service-price" data-en="From 400 EGP" data-ar="يبدأ من ٤٠٠ جنيه">From 400 EGP</span>
+    </div>
+  </div>
+</section>
+
+<!-- Gallery -->
+<section id="gallery" class="gallery">
+  <div class="section-header reveal">
+    <p class="section-label" data-en="Our Space" data-ar="صالوننا">Our Space</p>
+    <h2 data-en="Inside Luxe Beauty" data-ar="داخل Luxe Beauty">Inside Luxe Beauty</h2>
+    <div class="divider"></div>
+  </div>
+  <div class="gallery-grid reveal">
+    <div class="gallery-item g1"><img src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80" alt="Salon interior"></div>
+    <div class="gallery-item g2"><img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=500&q=80" alt="Nail care"></div>
+    <div class="gallery-item g3"><img src="https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?auto=format&fit=crop&w=600&q=80" alt="Hair styling"></div>
+    <div class="gallery-item g4"><img src="https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?auto=format&fit=crop&w=600&q=80" alt="Facial treatment"></div>
+    <div class="gallery-item g5"><img src="https://images.unsplash.com/photo-1596178065887-1198b6148b2b?auto=format&fit=crop&w=600&q=80" alt="Spa relaxation"></div>
+    <div class="gallery-item g6"><img src="https://images.unsplash.com/photo-1507652313519-d4e9174996dd?auto=format&fit=crop&w=600&q=80" alt="Beauty products"></div>
+  </div>
+</section>
+
+<!-- Pricing -->
+<section id="pricing" class="pricing">
+  <div class="pricing-inner">
+    <div class="section-header reveal">
+      <p class="section-label" data-en="Transparent Pricing" data-ar="أسعار شفافة">Transparent Pricing</p>
+      <h2 data-en="Our Price List" data-ar="قائمة أسعارنا">Our Price List</h2>
+      <div class="divider"></div>
+    </div>
+    <div class="pricing-grid">
+      <div class="pricing-card reveal">
+        <p class="price-cat" data-en="Facial & Skin" data-ar="البشرة والوجه">Facial & Skin</p>
+        <h3 data-en="Skincare Menu" data-ar="قائمة العناية بالبشرة">Skincare Menu</h3>
+        <div class="price-item"><span data-en="Classic Facial" data-ar="فيشيال كلاسيك">Classic Facial</span><span class="price">250 EGP</span></div>
+        <div class="price-item"><span data-en="Deep Cleanse Facial" data-ar="تنظيف عميق للبشرة">Deep Cleanse Facial</span><span class="price">320 EGP</span></div>
+        <div class="price-item"><span data-en="Anti-Aging Treatment" data-ar="علاج مضاد للشيخوخة">Anti-Aging Treatment</span><span class="price">450 EGP</span></div>
+        <div class="price-item"><span data-en="Hydra Glow Facial" data-ar="فيشيال هيدرا جلو">Hydra Glow Facial</span><span class="price">380 EGP</span></div>
+      </div>
+      <div class="pricing-card featured reveal">
+        <p class="price-cat" data-en="Bath & Wellness" data-ar="الاسترخاء والعناية">Bath & Wellness</p>
+        <h3 data-en="Wellness Menu" data-ar="قائمة الاسترخاء">Wellness Menu</h3>
+        <div class="price-item"><span data-en="Moroccan Bath Basic" data-ar="حمام مغربي أساسي">Moroccan Bath Basic</span><span class="price">400 EGP</span></div>
+        <div class="price-item"><span data-en="Moroccan Bath Premium" data-ar="حمام مغربي بريميوم">Moroccan Bath Premium</span><span class="price">580 EGP</span></div>
+        <div class="price-item"><span data-en="Sauna Session" data-ar="جلسة ساونا">Sauna Session</span><span class="price">350 EGP</span></div>
+        <div class="price-item"><span data-en="Full Spa Package" data-ar="باقة السبا الكاملة">Full Spa Package</span><span class="price">850 EGP</span></div>
+      </div>
+      <div class="pricing-card reveal">
+        <p class="price-cat" data-en="Hair & Nails" data-ar="الشعر والأظافر">Hair & Nails</p>
+        <h3 data-en="Style Menu" data-ar="قائمة الإطلالة">Style Menu</h3>
+        <div class="price-item"><span data-en="Haircut & Blowdry" data-ar="قص وتجفيف">Haircut & Blowdry</span><span class="price">180 EGP</span></div>
+        <div class="price-item"><span data-en="Hair Color (Full)" data-ar="صباغة كاملة">Hair Color (Full)</span><span class="price">450 EGP</span></div>
+        <div class="price-item"><span data-en="Manicure" data-ar="مانيكير">Manicure</span><span class="price">120 EGP</span></div>
+        <div class="price-item"><span data-en="Pedicure" data-ar="باديكير">Pedicure</span><span class="price">150 EGP</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- About -->
+<section id="about" class="about">
+  <div class="about-inner">
+    <div class="about-img-wrap reveal">
+      <img src="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80" alt="Luxe Beauty Center">
+      <div class="about-badge">
+        <strong>5+</strong>
+        <span data-en="Years of Excellence" data-ar="سنوات من التميّز">Years of Excellence</span>
+      </div>
+    </div>
+    <div class="about-text reveal">
+      <p class="section-label" data-en="Our Story" data-ar="قصتنا">Our Story</p>
+      <h2 data-en="Why Choose Luxe Beauty?" data-ar="لماذا Luxe Beauty؟">Why Choose Luxe Beauty?</h2>
+      <div class="divider"></div>
+      <p data-en="At Luxe Beauty Center, we believe self-care is not a luxury — it's a necessity. Our team of certified professionals is dedicated to providing the highest quality treatments in a serene, welcoming environment in the heart of Cairo."
+         data-ar="في Luxe Beauty Center، نؤمن بأن العناية بالنفس ليست ترفًا بل ضرورة. فريقنا من المتخصصات المعتمدات يقدم أعلى مستويات الجودة في أجواء هادئة ودافئة في قلب القاهرة.">
+        At Luxe Beauty Center, we believe self-care is not a luxury — it's a necessity. Our team of certified professionals is dedicated to providing the highest quality treatments in a serene, welcoming environment in the heart of Cairo.
+      </p>
+      <p data-en="We use only organic, cruelty-free products to ensure your safety, your skin's health, and our planet's wellbeing."
+         data-ar="نستخدم منتجات طبيعية وعضوية فقط لضمان سلامتك وصحة بشرتك وحماية بيئتنا.">
+        We use only organic, cruelty-free products to ensure your safety, your skin's health, and our planet's wellbeing.
+      </p>
+      <div class="features-list">
+        <div class="feature-item"><div class="feature-dot"></div><span data-en="Certified & experienced beauty professionals" data-ar="متخصصات جمال معتمدات وذوات خبرة">Certified & experienced beauty professionals</span></div>
+        <div class="feature-item"><div class="feature-dot"></div><span data-en="100% organic, cruelty-free product lines" data-ar="منتجات ١٠٠٪ طبيعية وغير مُختبَرة على الحيوانات">100% organic, cruelty-free product lines</span></div>
+        <div class="feature-item"><div class="feature-dot"></div><span data-en="Private, hygienic treatment rooms" data-ar="غرف علاج خاصة ومعقّمة">Private, hygienic treatment rooms</span></div>
+        <div class="feature-item"><div class="feature-dot"></div><span data-en="Flexible appointment scheduling" data-ar="مواعيد مرنة تناسب وقتك">Flexible appointment scheduling</span></div>
+        <div class="feature-item"><div class="feature-dot"></div><span data-en="Trusted by 2,000+ clients in Cairo & Giza" data-ar="ثقة أكثر من ٢٠٠٠ عميلة في القاهرة والجيزة">Trusted by 2,000+ clients in Cairo & Giza</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials">
+  <div class="testimonials-inner">
+    <div class="section-header reveal">
+      <p class="section-label" data-en="Client Love" data-ar="آراء عميلاتنا">Client Love</p>
+      <h2 data-en="What Our Clients Say" data-ar="ماذا قالت عميلاتنا">What Our Clients Say</h2>
+      <div class="divider center"></div>
+      <p data-en="Real experiences from the women who trust us with their beauty."
+         data-ar="تجارب حقيقية من سيدات وثّقن بنا جمالهن.">Real experiences from the women who trust us with their beauty.</p>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testi-card reveal">
+        <div class="stars">★★★★★</div>
+        <p class="testi-text"
+           data-en='"The Moroccan bath was absolutely divine. I left feeling completely renewed — my skin has never felt so soft. This is my new monthly ritual!"'
+           data-ar='"الحمام المغربي كان تجربة لا تُوصف! خرجت أحسّ بتجديد كامل — بشرتي ما كانت ناعمة زي كده أبدًا. صبح ريتوال شهري لازم!"'>
+          "The Moroccan bath was absolutely divine. I left feeling completely renewed — my skin has never felt so soft. This is my new monthly ritual!"
+        </p>
+        <div class="testi-author">
+          <div class="testi-avatar">🌸</div>
+          <div>
+            <div class="testi-name">Nour El-Shamy</div>
+            <div class="testi-meta" data-en="Facial & Moroccan Bath — Cairo" data-ar="فيشيال وحمام مغربي — القاهرة">Facial & Moroccan Bath — Cairo</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card reveal">
+        <div class="stars">★★★★★</div>
+        <p class="testi-text"
+           data-en='"I\'ve been coming here for hair care for over a year. The team truly listens to what you want, and the results always exceed my expectations."'
+           data-ar='"بجي هنا من أكتر من سنة للعناية بشعري. الفريق بيسمعوا لحاجاتك ودايمًا النتيجة تتعدى توقعاتي."'>
+          "I've been coming here for hair care for over a year. The team truly listens to what you want, and the results always exceed my expectations."
+        </p>
+        <div class="testi-author">
+          <div class="testi-avatar">💫</div>
+          <div>
+            <div class="testi-name">Yasmine Khalil</div>
+            <div class="testi-meta" data-en="Hair Styling — Giza" data-ar="تصفيف الشعر — الجيزة">Hair Styling — Giza</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card reveal">
+        <div class="stars">★★★★★</div>
+        <p class="testi-text"
+           data-en='"The environment is so calm and luxurious. The facial treatment made my skin glow for weeks. The staff is incredibly warm and professional."'
+           data-ar='"الجو هادي وراقي جدًا. الفيشيال خلّى بشرتي تضيء لأسابيع. والفريق محترف وودود بشكل مميز."'>
+          "The environment is so calm and luxurious. The facial treatment made my skin glow for weeks. The staff is incredibly warm and professional."
+        </p>
+        <div class="testi-author">
+          <div class="testi-avatar">✨</div>
+          <div>
+            <div class="testi-name">Dina Mostafa</div>
+            <div class="testi-meta" data-en="Hydra Glow Facial — Giza" data-ar="فيشيال هيدرا جلو — الجيزة">Hydra Glow Facial — Giza</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Booking -->
+<section id="booking" class="booking">
+  <div class="booking-inner">
+    <p class="section-label" data-en="Reserve Your Moment" data-ar="احجزي لحظتك">Reserve Your Moment</p>
+    <h2 data-en="Book an Appointment" data-ar="احجزي موعدك">Book an Appointment</h2>
+    <p class="booking-desc"
+       data-en="Choose your service, date, time, and payment method. We'll confirm within 2 hours."
+       data-ar="اختاري الخدمة والتاريخ والوقت وطريقة الدفع. سنتواصل معكِ خلال ساعتين.">
+      Choose your service, date, time, and payment method. We'll confirm within 2 hours.
+    </p>
+    <div class="booking-form">
+      <!-- FORM -->
+      <div id="booking-form-wrap">
+        <form id="booking-form" novalidate>
+
+          <!-- Name & Phone & Email -->
+          <div class="form-row">
+            <div class="form-group">
+              <label data-en="Full Name" data-ar="الاسم الكامل">Full Name</label>
+              <input type="text" id="inp-name" placeholder="e.g. Sara Ahmed" required>
+            </div>
+            <div class="form-group">
+              <label data-en="Email Address" data-ar="البريد الإلكتروني">Email Address</label>
+              <input type="email" id="inp-email" placeholder="your.email@example.com" required>
+            </div>
+          </div>
+
+          <!-- Phone -->
+          <div class="form-group">
+            <label data-en="Phone Number" data-ar="رقم الهاتف">Phone Number</label>
+            <input type="tel" id="inp-phone" placeholder="+20 1X XXXX XXXX" required>
+          </div>
+
+          <!-- Service -->
+          <div class="form-group">
+            <label data-en="Service Type" data-ar="نوع الخدمة">Service Type</label>
+            <select id="inp-service">
+              <option value="" data-en="Select a service..." data-ar="اختاري الخدمة...">Select a service...</option>
+              <option data-en="Facial Treatment"  data-ar="علاج البشرة">Facial Treatment</option>
+              <option data-en="Hair Styling"      data-ar="تصفيف الشعر">Hair Styling</option>
+              <option data-en="Nail Care"         data-ar="العناية بالأظافر">Nail Care</option>
+              <option data-en="Sauna Bath"        data-ar="الساونا">Sauna Bath</option>
+              <option data-en="Moroccan Bath"     data-ar="الحمام المغربي">Moroccan Bath</option>
+              <option data-en="Full Spa Package"  data-ar="باقة السبا الكاملة">Full Spa Package</option>
+            </select>
+          </div>
+
+          <!-- Date -->
+          <div class="form-group">
+            <label data-en="Preferred Date" data-ar="التاريخ المفضّل">Preferred Date</label>
+            <input type="date" id="booking-date" required>
+          </div>
+
+          <!-- Time Slots -->
+          <div class="form-group">
+            <label data-en="Preferred Time" data-ar="الوقت المفضّل">Preferred Time</label>
+            <div class="time-slots" id="time-slots"></div>
+            <input type="hidden" id="selected-time">
+          </div>
+
+          <!-- Payment Method -->
+          <div class="form-group">
+            <label data-en="Payment Method" data-ar="طريقة الدفع">Payment Method</label>
+            <div class="pay-options">
+              <div class="pay-card" id="pay-card-instapay" onclick="selectPayment('instapay')">
+                <span class="pay-card-icon">📱</span>
+                <div class="pay-card-info">
+                  <strong data-en="InstaPay" data-ar="إنستاباي">InstaPay</strong>
+                  <small data-en="Pay deposit online" data-ar="ادفعي مقدّم أونلاين">Pay deposit online</small>
+                </div>
+              </div>
+              <div class="pay-card" id="pay-card-cash" onclick="selectPayment('cash')">
+                <span class="pay-card-icon">💵</span>
+                <div class="pay-card-info">
+                  <strong data-en="Cash" data-ar="كاش">Cash</strong>
+                  <small data-en="Pay at the salon" data-ar="ادفعي في الصالون">Pay at the salon</small>
+                </div>
+              </div>
+            </div>
+            <input type="hidden" id="selected-payment">
+
+            <!-- InstaPay panel -->
+            <div class="pay-panel" id="panel-instapay" style="display:none">
+              <div class="ip-header">
+                <div class="ip-logo">iP</div>
+                <div class="ip-header-text">
+                  <strong data-en="Pay via InstaPay" data-ar="الدفع عبر إنستاباي">Pay via InstaPay</strong>
+                  <small data-en="Send deposit to confirm your booking" data-ar="أرسلي المقدّم لتأكيد الحجز">Send deposit to confirm your booking</small>
+                </div>
+              </div>
+              <div class="ip-body">
+                <div class="ip-field">
+                  <label data-en="INSTAPAY USERNAME" data-ar="اسم المستخدم">INSTAPAY USERNAME</label>
+                  <div class="ip-value">
+                    <span id="ip-username">@YourUsernameHere</span>
+                    <button type="button" class="copy-btn" id="copy-username"
+                      data-en="Copy" data-ar="نسخ" onclick="copyField('ip-username','copy-username')">Copy</button>
+                  </div>
+                </div>
+                <div class="ip-field">
+                  <label data-en="PHONE / WALLET NUMBER" data-ar="رقم الهاتف / المحفظة">PHONE / WALLET NUMBER</label>
+                  <div class="ip-value">
+                    <span id="ip-phone">+20 1X XXXX XXXX</span>
+                    <button type="button" class="copy-btn" id="copy-phone"
+                      data-en="Copy" data-ar="نسخ" onclick="copyField('ip-phone','copy-phone')">Copy</button>
+                  </div>
+                </div>
+                <div class="ip-field">
+                  <label data-en="DEPOSIT AMOUNT" data-ar="مبلغ المقدّم">DEPOSIT AMOUNT</label>
+                  <div class="ip-value">
+                    <span data-en="100 EGP (deducted from total)" data-ar="١٠٠ جنيه (تُخصم من الإجمالي)">100 EGP (deducted from total)</span>
+                  </div>
+                </div>
+                <div class="ip-note"
+                  data-en="📌 After sending the deposit, please send us a screenshot on WhatsApp to confirm your booking."
+                  data-ar="📌 بعد إرسال المقدّم، من فضلكِ أرسلي لقطة شاشة على واتساب لتأكيد الحجز.">
+                  📌 After sending the deposit, please send us a screenshot on WhatsApp to confirm your booking.
+                </div>
+              </div>
+            </div>
+
+            <!-- Cash panel -->
+            <div class="cash-panel" id="panel-cash" style="display:none">
+              <span class="cash-icon">💵</span>
+              <p data-en="No problem! Pay the full amount in cash when you arrive. Your appointment will be reserved once we call to confirm."
+                 data-ar="لا مشكلة! يمكنكِ دفع المبلغ كاملًا كاش عند وصولك للصالون. سيتم تأكيد موعدك بمجرد اتصالنا بكِ.">
+                No problem! Pay the full amount in cash when you arrive. Your appointment will be reserved once we call to confirm.
+              </p>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit" data-en="Confirm Booking ✦" data-ar="تأكيد الحجز ✦">Confirm Booking ✦</button>
+        </form>
+      </div>
+
+      <!-- SUCCESS -->
+      <div class="success-msg" id="success-msg">
+        <div class="check">✦</div>
+        <h3 data-en="Booking Received!" data-ar="تم استلام حجزك!">Booking Received!</h3>
+        <p id="success-text"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer id="contact">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <span class="logo">Luxe <span style="font-style:italic;font-weight:300">Beauty</span></span>
+      <p data-en="Your sanctuary for beauty and wellness in Cairo. Where every visit is an experience to remember."
+         data-ar="ملاذك للجمال والعناية في القاهرة. كل زيارة تجربة لا تُنسى.">Your sanctuary for beauty and wellness in Cairo. Where every visit is an experience to remember.</p>
+    </div>
+    <div class="footer-col">
+      <h4 data-en="Visit Us" data-ar="زوريننا">Visit Us</h4>
+      <p data-en="123 Tahrir Square" data-ar="١٢٣ ميدان التحرير">123 Tahrir Square</p>
+      <p data-en="Giza, Cairo, Egypt" data-ar="الجيزة، القاهرة، مصر">Giza, Cairo, Egypt</p>
+    </div>
+    <div class="footer-col">
+      <h4 data-en="Contact" data-ar="تواصلي معنا">Contact</h4>
+      <a href="tel:+201XXXXXXXXX">+20 1X XXXX XXXX</a>
+      <a href="mailto:hello@luxebeauty.com">hello@luxebeauty.com</a>
+      <a href="https://wa.me/201XXXXXXXXX" target="_blank" data-en="WhatsApp Us" data-ar="واتساب">WhatsApp Us</a>
+    </div>
+    <div class="footer-col">
+      <h4 data-en="Hours" data-ar="ساعات العمل">Hours</h4>
+      <p data-en="Mon – Fri: 9am – 8pm"  data-ar="الاثنين – الجمعة: ٩ص – ٨م">Mon – Fri: 9am – 8pm</p>
+      <p data-en="Saturday: 10am – 7pm"  data-ar="السبت: ١٠ص – ٧م">Saturday: 10am – 7pm</p>
+      <p data-en="Sunday: Closed"         data-ar="الأحد: مغلق">Sunday: Closed</p>
+    </div>
+  </div>
+  <div class="copyright">
+    <p data-en="© 2025 Luxe Beauty Center. All Rights Reserved. Made with ♥ in Cairo."
+       data-ar="© ٢٠٢٥ Luxe Beauty Center. جميع الحقوق محفوظة. صُنع بـ♥ في القاهرة.">© 2025 Luxe Beauty Center. All Rights Reserved. Made with ♥ in Cairo.</p>
+  </div>
+</footer>
+
+<script>
+'use strict';
+
+/* ═══════════════════════════════════
+   STATE
+═══════════════════════════════════ */
+let lang = 'en';
+let selectedPayment = '';
+
+/* ═══════════════════════════════════
+   LANGUAGE
+═══════════════════════════════════ */
+function setLang(newLang) {
+  lang = newLang;
+  const html = document.documentElement;
+  html.lang = lang;
+  html.dir  = lang === 'ar' ? 'rtl' : 'ltr';
+
+  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+  document.getElementById('btn-ar').classList.toggle('active', lang === 'ar');
+
+  // translate all [data-en] elements
+  document.querySelectorAll('[data-en]').forEach(el => {
+    const val = el.getAttribute('data-' + lang);
+    if (val === null) return;
+    if (val.includes('<') || el.innerHTML.match(/<[a-z]/i)) {
+      el.innerHTML = val;
+    } else {
+      el.textContent = val;
+    }
+  });
+
+  // translate <option> elements
+  document.querySelectorAll('option[data-en]').forEach(opt => {
+    const val = opt.getAttribute('data-' + lang);
+    if (val) opt.textContent = val;
+  });
+
+  // placeholders
+  document.getElementById('inp-name').placeholder  = lang === 'ar' ? 'مثال: سارة أحمد'      : 'e.g. Sara Ahmed';
+  document.getElementById('inp-phone').placeholder = lang === 'ar' ? '+20 1X XXXX XXXX'      : '+20 1X XXXX XXXX';
+
+  // re-render time slots in correct language
+  renderSlots();
+
+  try { localStorage.setItem('luxe-lang', lang); } catch(e) {}
+}
+
+/* ═══════════════════════════════════
+   NAV
+═══════════════════════════════════ */
+window.addEventListener('scroll', () => {
+  document.getElementById('main-header').classList.toggle('scrolled', window.scrollY > 40);
+});
+
+function toggleMenu() {
+  document.getElementById('nav-links').classList.toggle('open');
+}
+
+// smooth scroll
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[href^="#"]');
+  if (!a) return;
+  const target = document.querySelector(a.getAttribute('href'));
+  if (target) {
+    e.preventDefault();
+    target.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('nav-links').classList.remove('open');
+  }
+});
+
+/* ═══════════════════════════════════
+   SCROLL REVEAL
+═══════════════════════════════════ */
+const revealObserver = new IntersectionObserver(entries => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => entry.target.classList.add('visible'), i * 80);
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+/* ═══════════════════════════════════
+   TIME SLOTS
+═══════════════════════════════════ */
+const SLOTS_EN = ['9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM'];
+const SLOTS_AR = ['٩:٠٠ ص','١٠:٠٠ ص','١١:٠٠ ص','١٢:٠٠ م','١:٠٠ م','٢:٠٠ م','٣:٠٠ م','٤:٠٠ م','٥:٠٠ م','٦:٠٠ م'];
+
+function getDisabledIdx(dateStr) {
+  const seed = dateStr ? dateStr.split('-').reduce((a,b) => a + parseInt(b,10), 0) : 0;
+  return SLOTS_EN.map((_,i) => (seed + i) % 4 === 0 ? i : -1).filter(i => i >= 0);
+}
+
+function renderSlots() {
+  const dateVal    = document.getElementById('booking-date').value;
+  const container  = document.getElementById('time-slots');
+  const disabledIdx = getDisabledIdx(dateVal);
+  const display    = lang === 'ar' ? SLOTS_AR : SLOTS_EN;
+
+  // remember previously selected slot
+  const prevVal = document.getElementById('selected-time').value;
+
+  container.innerHTML = '';
+  display.forEach((label, i) => {
+    const off = disabledIdx.includes(i);
+    const div = document.createElement('div');
+    div.className = 'time-slot' + (off ? ' disabled' : '');
+    if (!off && prevVal === SLOTS_EN[i]) div.classList.add('selected');
+    div.textContent = label;
+    if (!off) {
+      div.addEventListener('click', () => {
+        container.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+        div.classList.add('selected');
+        document.getElementById('selected-time').value = SLOTS_EN[i];
+      });
+    }
+    container.appendChild(div);
+  });
+}
+
+// initialise date
+const dateInput = document.getElementById('booking-date');
+dateInput.min = new Date().toISOString().split('T')[0];
+dateInput.addEventListener('change', renderSlots);
+renderSlots();
+
+/* ═══════════════════════════════════
+   PAYMENT METHOD
+═══════════════════════════════════ */
+function selectPayment(method) {
+  selectedPayment = method;
+  document.getElementById('selected-payment').value = method;
+
+  document.getElementById('pay-card-instapay').classList.toggle('selected', method === 'instapay');
+  document.getElementById('pay-card-cash').classList.toggle('selected', method === 'cash');
+
+  document.getElementById('panel-instapay').style.display = method === 'instapay' ? 'block' : 'none';
+  document.getElementById('panel-cash').style.display     = method === 'cash'      ? 'block' : 'none';
+}
+
+/* ═══════════════════════════════════
+   COPY BUTTON
+═══════════════════════════════════ */
+function copyField(spanId, btnId) {
+  const text = document.getElementById(spanId).textContent.trim();
+  const btn  = document.getElementById(btnId);
+
+  const succeed = () => {
+    btn.textContent = lang === 'ar' ? '✓ تم' : '✓ Copied!';
+    btn.style.background = 'rgba(37,211,102,.3)';
+    btn.style.color = '#7fff7f';
+    setTimeout(() => {
+      btn.textContent = btn.getAttribute('data-' + lang) || (lang === 'ar' ? 'نسخ' : 'Copy');
+      btn.style.background = '';
+      btn.style.color = '';
+    }, 2000);
+  };
+
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(succeed).catch(succeed);
+  } else {
+    const tmp = document.createElement('input');
+    tmp.value = text;
+    document.body.appendChild(tmp);
+    tmp.select();
+    document.execCommand('copy');
+    document.body.removeChild(tmp);
+    succeed();
+  }
+}
+
+/* ═══════════════════════════════════
+   BOOKING SUBMIT — GitHub Pages Safe Version
+   This version will NOT call /api on GitHub Pages, because GitHub Pages cannot run backend APIs.
+   It saves the booking in the browser and opens WhatsApp with the booking details.
+═══════════════════════════════════ */
+
+// Put your deployed backend API link here later if you deploy the backend, for example:
+// const DEPLOYED_API_URL = 'https://your-backend.onrender.com/api';
+const DEPLOYED_API_URL = '';
+
+const IS_GITHUB_PAGES = location.hostname.includes('github.io');
+const API_BASE_URL = DEPLOYED_API_URL || (IS_GITHUB_PAGES ? '' : '/api');
+
+function saveBookingLocally(booking) {
+  const key = 'luxe-beauty-bookings';
+  const old = JSON.parse(localStorage.getItem(key) || '[]');
+  old.push({
+    id: Date.now().toString(),
+    status: 'Pending',
+    createdAt: new Date().toISOString(),
+    ...booking
+  });
+  localStorage.setItem(key, JSON.stringify(old));
+}
+
+function openWhatsAppBooking(booking) {
+  // Replace this with the real salon WhatsApp number, without + or spaces.
+  const whatsappNumber = '201XXXXXXXXX';
+  const message = `New Booking Request:%0A%0A` +
+    `Name: ${encodeURIComponent(booking.firstName)}%0A` +
+    `Email: ${encodeURIComponent(booking.email)}%0A` +
+    `Phone: ${encodeURIComponent(booking.phone)}%0A` +
+    `Service: ${encodeURIComponent(booking.service)}%0A` +
+    `Date: ${encodeURIComponent(booking.date)}%0A` +
+    `Time: ${encodeURIComponent(booking.time)}%0A` +
+    `Payment: ${encodeURIComponent(booking.paymentMethod)}`;
+  window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
+}
+
+document.getElementById('booking-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  if (!document.getElementById('selected-time').value) {
+    alert(lang === 'ar' ? 'يرجى اختيار وقت مناسب.' : 'Please select a preferred time slot.');
+    return;
+  }
+  if (!selectedPayment) {
+    alert(lang === 'ar' ? 'يرجى اختيار طريقة الدفع.' : 'Please select a payment method.');
+    return;
+  }
+
+  const formData = {
+    firstName: document.getElementById('inp-name').value.trim(),
+    email: document.getElementById('inp-email').value.trim(),
+    phone: document.getElementById('inp-phone').value.trim(),
+    service: document.getElementById('inp-service').value,
+    date: document.getElementById('booking-date').value,
+    time: document.getElementById('selected-time').value,
+    paymentMethod: selectedPayment,
+    description: 'Online booking via website'
+  };
+
+  if (!formData.firstName || !formData.email || !formData.phone || !formData.service || !formData.date) {
+    alert(lang === 'ar' ? 'من فضلكِ املئي كل البيانات المطلوبة.' : 'Please complete all required fields.');
+    return;
+  }
+
+  try {
+    if (API_BASE_URL) {
+      const response = await fetch(`${API_BASE_URL}/bookings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        throw new Error('The booking API returned HTML, not JSON. Check your backend URL.');
+      }
+
+      const data = await response.json();
+      if (!response.ok) {
+        const errorMsg = data.error || data.errors?.[0]?.msg || 'Failed to create booking';
+        alert(lang === 'ar' ? 'خطأ: ' + errorMsg : 'Error: ' + errorMsg);
+        return;
+      }
+    } else {
+      // Static GitHub Pages mode: no backend available.
+      saveBookingLocally(formData);
+      openWhatsAppBooking(formData);
+    }
+
+    const msgs = {
+      instapay: {
+        en: 'Thank you! Your booking request was received. WhatsApp will open so you can send the request to the salon.',
+        ar: 'شكرًا لكِ! تم تسجيل طلب الحجز. سيفتح واتساب لإرسال الطلب للصالون.'
+      },
+      cash: {
+        en: "Thank you! Your booking request was received. WhatsApp will open so you can send the request to the salon.",
+        ar: 'شكرًا لكِ! تم تسجيل طلب الحجز. سيفتح واتساب لإرسال الطلب للصالون.'
+      }
+    };
+
+    document.getElementById('success-text').textContent = msgs[selectedPayment][lang];
+    document.getElementById('booking-form-wrap').style.display = 'none';
+    document.getElementById('success-msg').style.display = 'block';
+
+  } catch (error) {
+    console.error('Booking error:', error);
+    alert(lang === 'ar'
+      ? 'حدث خطأ في الحجز. تأكدي من رابط الباك إند أو استخدمي نسخة GitHub المعدلة.'
+      : 'Booking error. Please check the backend API link or use the GitHub Pages fixed version.');
+  }
+});
+
+/* ═══════════════════════════════════
+   INIT — restore saved language
+═══════════════════════════════════ */
+try {
+  const saved = localStorage.getItem('luxe-lang');
+  if (saved === 'ar') setLang('ar');
+} catch(e) {}
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "bookings": [],
+  "services": [
+    { "id": "facial", "name": "Facial Treatment", "price": 250, "active": true },
+    { "id": "hair", "name": "Hair Styling", "price": 180, "active": true },
+    { "id": "nails", "name": "Nail Care", "price": 120, "active": true },
+    { "id": "sauna", "name": "Sauna Bath", "price": 350, "active": true },
+    { "id": "moroccan", "name": "Moroccan Bath", "price": 400, "active": true },
+    { "id": "spa", "name": "Full Spa Package", "price": 850, "active": true }
+  ]
+}
