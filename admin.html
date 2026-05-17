@@ -1200,5 +1200,31 @@ function paymentBadge(payment) {
     : '<span class="badge badge-cash">Cash</span>';
 }
 </script>
+
+<script>
+async function loadBookings(){
+
+  const token = localStorage.getItem('adminToken');
+
+  try{
+
+    const response = await fetch('/api/bookings', {
+      headers:{
+        'Authorization':'Bearer ' + token
+      }
+    });
+
+    const data = await response.json();
+
+    console.log(data);
+
+  }catch(err){
+    console.error(err);
+  }
+}
+
+loadBookings();
+</script>
 </body>
+
 </html>

@@ -905,41 +905,48 @@ function openWhatsAppBooking(booking) {
   window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
 }
 
+
 document.getElementById('booking-form').addEventListener('submit', async function(e) {
   e.preventDefault();
 
-  if (!document.getElementById('selected-time').value) {
-    alert(lang === 'ar' ? 'يرجى اختيار وقت مناسب.' : 'Please select a preferred time slot.');
-    return;
-  }
-  if (!selectedPayment) {
-    alert(lang === 'ar' ? 'يرجى اختيار طريقة الدفع.' : 'Please select a payment method.');
-    return;
-  }
-
   const formData = {
-    firstName: document.getElementById('inp-name').value.trim(),
-    email: document.getElementById('inp-email').value.trim(),
-    phone: document.getElementById('inp-phone').value.trim(),
+    firstName: document.getElementById('inp-name').value,
+    email: document.getElementById('inp-email').value,
+    phone: document.getElementById('inp-phone').value,
     service: document.getElementById('inp-service').value,
     date: document.getElementById('booking-date').value,
     time: document.getElementById('selected-time').value,
-    paymentMethod: selectedPayment,
-    description: 'Online booking via website'
+    paymentMethod: selectedPayment || 'cash',
+    description: 'Website Booking'
   };
 
-  if (!formData.firstName || !formData.email || !formData.phone || !formData.service || !formData.date) {
-    alert(lang === 'ar' ? 'من فضلكِ املئي كل البيانات المطلوبة.' : 'Please complete all required fields.');
-    return;
-  }
-
   try {
-    if (API_BASE_URL) {
-      const response = await fetch(`${API_BASE_URL}/bookings`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
+
+    const response = await fetch('/api/bookings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(formData)
+    });
+
+    const data = await response.json();
+
+    if(!response.ok){
+      alert(data.error || 'Booking failed');
+      return;
+    }
+
+    alert('Booking Confirmed Successfully');
+
+    document.getElementById('booking-form').reset();
+
+  } catch(err){
+    console.error(err);
+    alert('Server connection failed');
+  }
+});
+
 
       const contentType = response.headers.get('content-type') || '';
       if (!contentType.includes('application/json')) {
