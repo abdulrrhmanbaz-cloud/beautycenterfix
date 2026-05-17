@@ -679,7 +679,7 @@ html[lang=ar] .footer-col h4{font-family:'Tajawal',sans-serif;letter-spacing:0;f
       <a href="tel:+201XXXXXXXXX">+20 1X XXXX XXXX</a>
       <a href="mailto:hello@luxebeauty.com">hello@luxebeauty.com</a>
       <a href="https://wa.me/201XXXXXXXXX" target="_blank" data-en="WhatsApp Us" data-ar="واتساب">WhatsApp Us</a>
-    <a href="/admin" data-en="Admin Dashboard" data-ar="لوحة الإدارة">Admin Dashboard</a>
+    <a href="admin.html" data-en="Admin Dashboard" data-ar="لوحة الإدارة">Admin Dashboard</a>
     </div>
     <div class="footer-col">
       <h4 data-en="Hours" data-ar="ساعات العمل">Hours</h4>
@@ -697,33 +697,171 @@ html[lang=ar] .footer-col h4{font-family:'Tajawal',sans-serif;letter-spacing:0;f
 <script>
 'use strict';
 
-
+/* ═══════════════════════════════════
+   STATE
+═══════════════════════════════════ */
+let lang = 'en';
+let selectedPayment = '';
 
 /* ═══════════════════════════════════
-   GOOGLE SHEET CONNECTION
-   Put your deployed Google Apps Script Web App URL here
+   LANGUAGE
 ═══════════════════════════════════ */
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyHimN4WBIjMlIF8p0wUDeUv1R6K5xvL-xGnvfradBvNo2TGE6XqLZXPQnCx83XTaEp/exec';
+function setLang(newLang) {
+  lang = newLang;
+  const html = document.documentElement;
+  html.lang = lang;
+  html.dir  = lang === 'ar' ? 'rtl' : 'ltr';
 
-async function sendBookingToGoogleSheet(booking) {
-  const body = new URLSearchParams();
-  Object.keys(booking).forEach(key => body.append(key, booking[key] || ''));
+  const btnEn = document.getElementById('btn-en');
+  const btnAr = document.getElementById('btn-ar');
+  if (btnEn) btnEn.classList.toggle('active', lang === 'en');
+  if (btnAr) btnAr.classList.toggle('active', lang === 'ar');
 
-  await fetch(GOOGLE_SCRIPT_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body
+  document.querySelectorAll('[data-en]').forEach(el => {
+    const val = el.getAttribute('data-' + lang);
+    if (val === null) return;
+    if (val.includes('<') || el.innerHTML.match(/<[a-z]/i)) el.innerHTML = val;
+    else el.textContent = val;
   });
 
-  return true;
+  document.querySelectorAll('option[data-en]').forEach(opt => {
+    const val = opt.getAttribute('data-' + lang);
+    if (val) opt.textContent = val;
+  });
+
+  const name = document.getElementById('inp-name');
+  const phone = document.getElementById('inp-phone');
+  if (name) name.placeholder  = lang === 'ar' ? 'مثال: سارة أحمد' : 'e.g. Sara Ahmed';
+  if (phone) phone.placeholder = '+20 1X XXXX XXXX';
+
+  renderSlots();
+  try { localStorage.setItem('luxe-lang', lang); } catch(e) {}
 }
 
 /* ═══════════════════════════════════
-   BOOKING SUBMIT — Google Sheet Version
-   Same design, shared online bookings
+   NAV
 ═══════════════════════════════════ */
-document.getElementById('booking-form').addEventListener('submit', async function(e) {
+window.addEventListener('scroll', () => {
+  const header = document.getElementById('main-header');
+  if (header) header.classList.toggle('scrolled', window.scrollY > 40);
+});
+
+function toggleMenu() {
+  const links = document.getElementById('nav-links');
+  if (links) links.classList.toggle('open');
+}
+
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[href^="#"]');
+  if (!a) return;
+  const target = document.querySelector(a.getAttribute('href'));
+  if (target) {
+    e.preventDefault();
+    target.scrollIntoView({ behavior: 'smooth' });
+    const links = document.getElementById('nav-links');
+    if (links) links.classList.remove('open');
+  }
+});
+
+/* ═══════════════════════════════════
+   SCROLL REVEAL
+═══════════════════════════════════ */
+const revealObserver = new IntersectionObserver(entries => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => entry.target.classList.add('visible'), i * 80);
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+/* ═══════════════════════════════════
+   TIME SLOTS
+═══════════════════════════════════ */
+const SLOTS_EN = ['9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM'];
+const SLOTS_AR = ['٩:٠٠ ص','١٠:٠٠ ص','١١:٠٠ ص','١٢:٠٠ م','١:٠٠ م','٢:٠٠ م','٣:٠٠ م','٤:٠٠ م','٥:٠٠ م','٦:٠٠ م'];
+
+function getDisabledIdx(dateStr) {
+  const seed = dateStr ? dateStr.split('-').reduce((a,b) => a + parseInt(b,10), 0) : 0;
+  return SLOTS_EN.map((_,i) => (seed + i) % 4 === 0 ? i : -1).filter(i => i >= 0);
+}
+
+function renderSlots() {
+  const dateInput = document.getElementById('booking-date');
+  const container = document.getElementById('time-slots');
+  const hidden = document.getElementById('selected-time');
+  if (!dateInput || !container || !hidden) return;
+
+  const disabledIdx = getDisabledIdx(dateInput.value);
+  const display = lang === 'ar' ? SLOTS_AR : SLOTS_EN;
+  const prevVal = hidden.value;
+
+  container.innerHTML = '';
+  display.forEach((label, i) => {
+    const off = disabledIdx.includes(i);
+    const div = document.createElement('div');
+    div.className = 'time-slot' + (off ? ' disabled' : '');
+    if (!off && prevVal === SLOTS_EN[i]) div.classList.add('selected');
+    div.textContent = label;
+    if (!off) {
+      div.addEventListener('click', () => {
+        container.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+        div.classList.add('selected');
+        hidden.value = SLOTS_EN[i];
+      });
+    }
+    container.appendChild(div);
+  });
+}
+
+const dateInput = document.getElementById('booking-date');
+if (dateInput) {
+  dateInput.min = new Date().toISOString().split('T')[0];
+  dateInput.addEventListener('change', renderSlots);
+}
+renderSlots();
+
+/* ═══════════════════════════════════
+   PAYMENT METHOD
+═══════════════════════════════════ */
+function selectPayment(method) {
+  selectedPayment = method;
+  const selected = document.getElementById('selected-payment');
+  if (selected) selected.value = method;
+
+  const ipCard = document.getElementById('pay-card-instapay');
+  const cashCard = document.getElementById('pay-card-cash');
+  const ipPanel = document.getElementById('panel-instapay');
+  const cashPanel = document.getElementById('panel-cash');
+
+  if (ipCard) ipCard.classList.toggle('selected', method === 'instapay');
+  if (cashCard) cashCard.classList.toggle('selected', method === 'cash');
+  if (ipPanel) ipPanel.style.display = method === 'instapay' ? 'block' : 'none';
+  if (cashPanel) cashPanel.style.display = method === 'cash' ? 'block' : 'none';
+}
+
+/* ═══════════════════════════════════
+   COPY BUTTON
+═══════════════════════════════════ */
+function copyField(spanId, btnId) {
+  const span = document.getElementById(spanId);
+  const btn = document.getElementById(btnId);
+  if (!span || !btn) return;
+  const text = span.textContent.trim();
+  const succeed = () => {
+    btn.textContent = lang === 'ar' ? '✓ تم' : '✓ Copied!';
+    setTimeout(() => btn.textContent = btn.getAttribute('data-' + lang) || (lang === 'ar' ? 'نسخ' : 'Copy'), 2000);
+  };
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(succeed).catch(succeed);
+  else succeed();
+}
+
+/* ═══════════════════════════════════
+   BOOKING SUBMIT — linked to Admin without changing design
+   Shared storage key: lx_bookings
+═══════════════════════════════════ */
+document.getElementById('booking-form').addEventListener('submit', function(e) {
   e.preventDefault();
 
   if (!document.getElementById('selected-time').value) {
@@ -736,17 +874,9 @@ document.getElementById('booking-form').addEventListener('submit', async functio
     return;
   }
 
-  if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes('PUT_YOUR_GOOGLE')) {
-    alert(lang === 'ar'
-      ? 'من فضلك ضعي رابط Google Apps Script أولاً داخل ملف index.html.'
-      : 'Please add your Google Apps Script URL inside index.html first.');
-    return;
-  }
-
-  const formData = {
-    id: Date.now().toString(),
+  const booking = {
+    id: Date.now(),
     name: document.getElementById('inp-name').value.trim(),
-    firstName: document.getElementById('inp-name').value.trim(),
     email: document.getElementById('inp-email').value.trim(),
     phone: document.getElementById('inp-phone').value.trim(),
     service: document.getElementById('inp-service').value,
@@ -759,58 +889,90 @@ document.getElementById('booking-form').addEventListener('submit', async functio
     createdAt: new Date().toISOString()
   };
 
-  if (!formData.name || !formData.email || !formData.phone || !formData.service || !formData.date) {
+  if (!booking.name || !booking.email || !booking.phone || !booking.service || !booking.date) {
     alert(lang === 'ar' ? 'من فضلكِ املئي كل البيانات المطلوبة.' : 'Please complete all required fields.');
     return;
   }
 
-  try {
-    const btn = this.querySelector('button[type="submit"]');
-    const oldText = btn ? btn.textContent : '';
-    if (btn) {
-      btn.disabled = true;
-      btn.textContent = lang === 'ar' ? 'جاري الإرسال...' : 'Sending...';
-    }
+  const bookings = JSON.parse(localStorage.getItem('lx_bookings') || '[]');
+  bookings.unshift(booking);
+  localStorage.setItem('lx_bookings', JSON.stringify(bookings));
 
-    await sendBookingToGoogleSheet(formData);
+  const successText = lang === 'ar'
+    ? `شكرًا ${booking.name}! تم استلام حجزك وسيظهر في لوحة الأدمن.`
+    : `Thank you, ${booking.name}! Your booking was received and it will appear in the admin dashboard.`;
 
-    const msgs = {
-      instapay: {
-        en: 'Thank you! Your booking was received and will appear in the admin page.',
-        ar: 'شكرًا لكِ! تم استلام الحجز وسيظهر في صفحة الأدمن.'
-      },
-      cash: {
-        en: 'Thank you! Your booking was received and will appear in the admin page.',
-        ar: 'شكرًا لكِ! تم استلام الحجز وسيظهر في صفحة الأدمن.'
-      }
-    };
+  document.getElementById('success-text').textContent = successText;
+  document.getElementById('booking-form-wrap').style.display = 'none';
+  document.getElementById('success-msg').style.display = 'block';
 
-    document.getElementById('success-text').textContent = msgs[selectedPayment][lang];
-    document.getElementById('booking-form-wrap').style.display = 'none';
-    document.getElementById('success-msg').style.display = 'block';
-
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = oldText;
-    }
-
-  } catch (error) {
-    console.error('Google Sheet booking error:', error);
-    alert(lang === 'ar'
-      ? 'حدث خطأ أثناء إرسال الحجز. راجعي رابط Google Apps Script.'
-      : 'There was an error sending the booking. Please check the Google Apps Script URL.');
-  }
+  this.reset();
+  document.getElementById('selected-time').value = '';
+  document.getElementById('selected-payment').value = '';
+  selectedPayment = '';
+  document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+  document.querySelectorAll('.pay-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('panel-instapay').style.display = 'none';
+  document.getElementById('panel-cash').style.display = 'none';
 });
 
 /* ═══════════════════════════════════
    INIT — restore saved language
 ═══════════════════════════════════ */
-
-
 try {
   const saved = localStorage.getItem('luxe-lang');
   if (saved === 'ar') setLang('ar');
 } catch(e) {}
 </script>
+
+<script>
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyHimN4WBIjMlIF8p0wUDeUv1R6K5xvL-xGnvfradBvNo2TGE6XqLZXPQnCx83XTaEp/exec';
+(function(){
+  const form = document.getElementById('booking-form');
+  if (!form) return;
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+
+    const booking = {
+      id: Date.now().toString(),
+      name: document.getElementById('inp-name')?.value?.trim() || '',
+      firstName: document.getElementById('inp-name')?.value?.trim() || '',
+      email: document.getElementById('inp-email')?.value?.trim() || '',
+      phone: document.getElementById('inp-phone')?.value?.trim() || '',
+      service: document.getElementById('inp-service')?.value || '',
+      date: document.getElementById('booking-date')?.value || '',
+      time: document.getElementById('selected-time')?.value || '',
+      payment: document.getElementById('selected-payment')?.value || window.selectedPayment || '',
+      paymentMethod: document.getElementById('selected-payment')?.value || window.selectedPayment || '',
+      status: 'pending',
+      notes: '',
+      createdAt: new Date().toISOString()
+    };
+
+    const body = new URLSearchParams();
+    Object.keys(booking).forEach(k => body.append(k, booking[k] || ''));
+
+    try {
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body
+      });
+
+      const success = document.getElementById('success-msg');
+      const wrap = document.getElementById('booking-form-wrap');
+      const txt = document.getElementById('success-text');
+      if (txt) txt.textContent = 'Booking received successfully.';
+      if (wrap) wrap.style.display = 'none';
+      if (success) success.style.display = 'block';
+    } catch(err) {
+      console.error(err);
+      alert('Booking could not be sent.');
+    }
+  }, true);
+})();
+</script>
+
 </body>
 </html>

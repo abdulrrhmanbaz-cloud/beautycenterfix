@@ -725,35 +725,93 @@ const CONFIG = {
 };
 
 /* ═══════════════════════════════════════
-   BOOKINGS DATA — received from normal page
+   DEMO DATA
 ═══════════════════════════════════════ */
+const DEMO_BOOKINGS = [
+  {id:1, name:'Nour El-Shamy',    phone:'+20 100 123 4567', service:'Facial Treatment',  date:'2025-04-18', time:'10:00 AM', payment:'instapay', status:'confirmed', notes:'Sensitive skin'},
+  {id:2, name:'Yasmine Khalil',   phone:'+20 101 234 5678', service:'Hair Styling',       date:'2025-04-18', time:'12:00 PM', payment:'cash',     status:'confirmed', notes:''},
+  {id:3, name:'Dina Mostafa',     phone:'+20 102 345 6789', service:'Moroccan Bath',      date:'2025-04-19', time:'2:00 PM',  payment:'instapay', status:'pending',   notes:'First visit'},
+  {id:4, name:'Sara Ahmed',       phone:'+20 103 456 7890', service:'Nail Care',          date:'2025-04-19', time:'4:00 PM',  payment:'cash',     status:'pending',   notes:''},
+  {id:5, name:'Layla Hassan',     phone:'+20 104 567 8901', service:'Sauna Bath',         date:'2025-04-20', time:'11:00 AM', payment:'instapay', status:'confirmed', notes:''},
+  {id:6, name:'Mariam Youssef',   phone:'+20 105 678 9012', service:'Full Spa Package',   date:'2025-04-20', time:'3:00 PM',  payment:'instapay', status:'pending',   notes:'Birthday treat'},
+  {id:7, name:'Rania Ibrahim',    phone:'+20 106 789 0123', service:'Hair Styling',       date:'2025-04-17', time:'9:00 AM',  payment:'cash',     status:'cancelled', notes:'Client rescheduled'},
+  {id:8, name:'Hana Farouk',      phone:'+20 107 890 1234', service:'Facial Treatment',  date:'2025-04-21', time:'1:00 PM',  payment:'cash',     status:'confirmed', notes:''},
+  {id:9, name:'Noha Sami',        phone:'+20 108 901 2345', service:'Nail Care',          date:'2025-04-22', time:'5:00 PM',  payment:'instapay', status:'pending',   notes:''},
+  {id:10,name:'Alia Mahmoud',     phone:'+20 109 012 3456', service:'Moroccan Bath',      date:'2025-04-22', time:'10:00 AM', payment:'cash',     status:'confirmed', notes:'Regular client'},
+];
+
+
+/* ═══════════════════════════════════════
+   GOOGLE SHEET CONNECTION
+   Put your deployed Google Apps Script Web App URL here
+═══════════════════════════════════════ */
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyHimN4WBIjMlIF8p0wUDeUv1R6K5xvL-xGnvfradBvNo2TGE6XqLZXPQnCx83XTaEp/exec';
+
 /* ═══════════════════════════════════════
    STATE
 ═══════════════════════════════════════ */
 let storedPassword = localStorage.getItem('lx_pw') || CONFIG.password;
-let bookings = JSON.parse(localStorage.getItem('lx_bookings') || '[]');
+let bookings = [];
 let currentFilter = 'all';
 let currentSearch = '';
-let nextId = bookings.length ? Math.max(...bookings.map(b => Number(b.id) || 0), 0) + 1 : 1;
+let nextId = 1;
 
 function saveBookings() {
-  localStorage.setItem('lx_bookings', JSON.stringify(bookings));
+  // Bookings are saved online in Google Sheet.
 }
 
-function refreshBookingsFromStorage() {
-  bookings = JSON.parse(localStorage.getItem('lx_bookings') || '[]');
-  nextId = bookings.length ? Math.max(...bookings.map(b => Number(b.id) || 0), 0) + 1 : 1;
+function jsonp(url) {
+  return new Promise((resolve, reject) => {
+    const callbackName = 'gsCallback_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+    window[callbackName] = (data) => {
+      delete window[callbackName];
+      script.remove();
+      resolve(data);
+    };
+    const script = document.createElement('script');
+    script.src = url + (url.includes('?') ? '&' : '?') + 'action=list&callback=' + callbackName;
+    script.onerror = () => {
+      delete window[callbackName];
+      script.remove();
+      reject(new Error('Could not connect to Google Sheet'));
+    };
+    document.body.appendChild(script);
+  });
+}
+
+async function loadBookingsFromSheet() {
+  if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes('PUT_YOUR_GOOGLE')) {
+    bookings = [];
+    showToast('Add Google Apps Script URL in admin.html first', 'error');
+    return;
+  }
+
+  const data = await jsonp(GOOGLE_SCRIPT_URL);
+  bookings = (data.bookings || []).map((b, index) => ({
+    id: b.id || String(index + 1),
+    name: b.name || b.firstName || '',
+    phone: b.phone || '',
+    email: b.email || '',
+    service: b.service || '',
+    date: b.date || '',
+    time: b.time || '',
+    payment: b.payment || b.paymentMethod || 'cash',
+    status: b.status || 'pending',
+    notes: b.notes || '',
+    createdAt: b.createdAt || ''
+  }));
+  nextId = bookings.length + 1;
 }
 
 /* ═══════════════════════════════════════
    AUTH
 ═══════════════════════════════════════ */
-function doLogin() {
+async function doLogin() {
   const val = document.getElementById('pw-input').value;
   if (val === storedPassword) {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
-    initDashboard();
+    await initDashboard();
   } else {
     const err = document.getElementById('login-error');
     err.style.display = 'block';
@@ -779,7 +837,7 @@ const PAGE_TITLES = {
   settings:  'Admin <span>Settings</span>',
 };
 
-function showSection(name) {
+async function showSection(name) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('section-' + name).classList.add('active');
@@ -789,6 +847,14 @@ function showSection(name) {
     }
   });
   document.getElementById('page-title').innerHTML = PAGE_TITLES[name];
+
+  await loadBookingsFromSheet();
+  updateStats();
+  updatePendingBadge();
+  renderRecentTable();
+  renderWeekChart();
+  renderServiceBreakdown();
+
   if (name === 'bookings') renderBookings();
   if (name === 'clients')  renderClients();
 }
@@ -796,17 +862,18 @@ function showSection(name) {
 /* ═══════════════════════════════════════
    DASHBOARD INIT
 ═══════════════════════════════════════ */
-function initDashboard() {
-  refreshBookingsFromStorage();
+async function initDashboard() {
+  await loadBookingsFromSheet();
   updateStats();
   renderRecentTable();
   renderWeekChart();
   renderServiceBreakdown();
   updatePendingBadge();
+  renderBookings();
+  renderClients();
 }
 
 function updateStats() {
-  refreshBookingsFromStorage();
   const total     = bookings.length;
   const confirmed = bookings.filter(b => b.status === 'confirmed').length;
   const pending   = bookings.filter(b => b.status === 'pending').length;
@@ -824,31 +891,29 @@ function updatePendingBadge() {
 
 function renderRecentTable() {
   const tbody = document.getElementById('recent-tbody');
-  const recent = [...bookings].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0,5);
+  const recent = bookings.slice(0, 5);
   tbody.innerHTML = recent.length ? recent.map(b => `
     <tr>
-      <td class="bold">${b.name}</td>
-      <td>${b.service}</td>
+      <td class="bold">${escapeHtml(b.name)}</td>
+      <td>${escapeHtml(b.service)}</td>
       <td>${formatDate(b.date)}</td>
-      <td>${b.time}</td>
+      <td>${escapeHtml(b.time)}</td>
       <td>${statusBadge(b.status)}</td>
     </tr>`).join('') : '<tr class="empty-row"><td colspan="5">No bookings yet</td></tr>';
 }
 
 function renderWeekChart() {
   const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const now  = new Date();
   const counts = Array(7).fill(0);
   bookings.forEach(b => {
-    const d   = new Date(b.date);
-    const diff = Math.floor((now - d) / 86400000);
-    if (diff >= 0 && diff < 7) counts[6 - diff]++;
+    const d = new Date(b.date);
+    if (!isNaN(d)) counts[d.getDay()]++;
   });
   const max  = Math.max(...counts, 1);
   const chartEl  = document.getElementById('week-chart');
   const labelsEl = document.getElementById('week-labels');
   chartEl.innerHTML  = counts.map(c => `<div class="bar" style="height:${Math.max((c/max)*100,8)}%" title="${c} bookings"></div>`).join('');
-  labelsEl.innerHTML = days.map((d,i) => `<div class="chart-label-item">${d}</div>`).join('');
+  labelsEl.innerHTML = days.map(d => `<div class="chart-label-item">${d}</div>`).join('');
 }
 
 function renderServiceBreakdown() {
@@ -856,16 +921,16 @@ function renderServiceBreakdown() {
   bookings.forEach(b => { counts[b.service] = (counts[b.service]||0) + 1; });
   const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0,4);
   const total  = bookings.length || 1;
-  document.getElementById('service-breakdown').innerHTML = sorted.map(([svc,n]) => `
+  document.getElementById('service-breakdown').innerHTML = sorted.length ? sorted.map(([svc,n]) => `
     <div style="display:flex;flex-direction:column;gap:.3rem">
       <div style="display:flex;justify-content:space-between;font-size:.75rem">
-        <span style="color:var(--text-mid)">${svc}</span>
+        <span style="color:var(--text-mid)">${escapeHtml(svc)}</span>
         <span style="color:var(--text-dim)">${n}</span>
       </div>
       <div style="height:4px;background:var(--dark4);border-radius:2px">
         <div style="height:4px;border-radius:2px;background:linear-gradient(to right,var(--gold),var(--gold-light));width:${(n/total)*100}%;transition:width .6s"></div>
       </div>
-    </div>`).join('');
+    </div>`).join('') : '<p style="color:var(--text-dim);font-size:.8rem">No service data yet</p>';
 }
 
 /* ═══════════════════════════════════════
@@ -880,33 +945,29 @@ function getFilteredBookings() {
       b.status === currentFilter;
     const q = currentSearch.toLowerCase();
     const matchSearch = !q ||
-      b.name.toLowerCase().includes(q) ||
-      b.service.toLowerCase().includes(q) ||
-      b.phone.includes(q);
+      String(b.name).toLowerCase().includes(q) ||
+      String(b.service).toLowerCase().includes(q) ||
+      String(b.phone).includes(q);
     return matchFilter && matchSearch;
   });
 }
 
 function renderBookings() {
-  refreshBookingsFromStorage();
   const tbody = document.getElementById('bookings-tbody');
-  const list  = getFilteredBookings().sort((a,b) => new Date(b.date)-new Date(a.date));
+  const list  = getFilteredBookings();
   tbody.innerHTML = list.length ? list.map((b,i) => `
     <tr>
-      <td style="color:var(--text-dim);font-size:.78rem">#${b.id}</td>
-      <td class="bold">${b.name}</td>
-      <td>${b.phone}</td>
-      <td>${b.service}</td>
+      <td style="color:var(--text-dim);font-size:.78rem">#${escapeHtml(b.id)}</td>
+      <td class="bold">${escapeHtml(b.name)}</td>
+      <td>${escapeHtml(b.phone)}</td>
+      <td>${escapeHtml(b.service)}</td>
       <td>${formatDate(b.date)}</td>
-      <td>${b.time}</td>
+      <td>${escapeHtml(b.time)}</td>
       <td>${paymentBadge(b.payment)}</td>
       <td>${statusBadge(b.status)}</td>
       <td>
         <div class="action-btns">
-          ${b.status === 'pending' ? `<button class="btn-action btn-confirm" onclick="quickStatus(${b.id},'confirmed')">Confirm</button>` : ''}
-          ${b.status !== 'cancelled' ? `<button class="btn-action btn-cancel" onclick="quickStatus(${b.id},'cancelled')">Cancel</button>` : ''}
-          <button class="btn-action btn-edit" onclick="openEditBooking(${b.id})">Edit</button>
-          <button class="btn-action btn-delete" onclick="openDelete(${b.id})">✕</button>
+          <button class="btn-action btn-edit" onclick="openEditBooking('${escapeAttr(b.id)}')">View</button>
         </div>
       </td>
     </tr>`).join('') :
@@ -926,39 +987,21 @@ function searchBookings() {
 }
 
 function quickStatus(id, status) {
-  const b = bookings.find(x => x.id === id);
-  if (!b) return;
-  b.status = status;
-  saveBookings();
-  renderBookings();
-  updateStats();
-  updatePendingBadge();
-  renderRecentTable();
-  showToast(`Booking ${status}!`, status === 'confirmed' ? 'success' : 'info');
+  showToast('Status editing is disabled in Google Sheet version. Edit status directly in the Sheet.', 'info');
 }
 
 /* ═══════════════════════════════════════
    BOOKING MODAL
 ═══════════════════════════════════════ */
 function openAddBooking() {
-  document.getElementById('modal-booking-title').textContent = 'New Booking';
-  document.getElementById('edit-booking-id').value = '';
-  document.getElementById('edit-name').value    = '';
-  document.getElementById('edit-phone').value   = '';
-  document.getElementById('edit-service').value = 'Facial Treatment';
-  document.getElementById('edit-date').value    = '';
-  document.getElementById('edit-time').value    = '';
-  document.getElementById('edit-payment').value = 'instapay';
-  document.getElementById('edit-status').value  = 'pending';
-  document.getElementById('edit-notes').value   = '';
-  openModal('modal-booking');
+  showToast('Add bookings from the public booking page or directly in Google Sheet.', 'info');
 }
 
 function openEditBooking(id) {
-  const b = bookings.find(x => x.id === id);
+  const b = bookings.find(x => String(x.id) === String(id));
   if (!b) return;
-  document.getElementById('modal-booking-title').textContent = 'Edit Booking';
-  document.getElementById('edit-booking-id').value = id;
+  document.getElementById('modal-booking-title').textContent = 'Booking Details';
+  document.getElementById('edit-booking-id').value = b.id;
   document.getElementById('edit-name').value    = b.name;
   document.getElementById('edit-phone').value   = b.phone;
   document.getElementById('edit-service').value = b.service;
@@ -971,52 +1014,19 @@ function openEditBooking(id) {
 }
 
 function saveBooking() {
-  const id   = document.getElementById('edit-booking-id').value;
-  const data = {
-    name:    document.getElementById('edit-name').value.trim(),
-    phone:   document.getElementById('edit-phone').value.trim(),
-    service: document.getElementById('edit-service').value,
-    date:    document.getElementById('edit-date').value,
-    time:    document.getElementById('edit-time').value,
-    payment: document.getElementById('edit-payment').value,
-    status:  document.getElementById('edit-status').value,
-    notes:   document.getElementById('edit-notes').value.trim(),
-  };
-  if (!data.name || !data.date) { showToast('Name and date are required','error'); return; }
-
-  if (id) {
-    const idx = bookings.findIndex(x => x.id === parseInt(id));
-    if (idx >= 0) bookings[idx] = { ...bookings[idx], ...data };
-  } else {
-    bookings.unshift({ id: nextId++, ...data });
-  }
-  saveBookings();
+  showToast('To update booking data, edit it in the Google Sheet.', 'info');
   closeModal('modal-booking');
-  renderBookings();
-  updateStats();
-  updatePendingBadge();
-  renderRecentTable();
-  showToast(id ? 'Booking updated!' : 'Booking added!', 'success');
 }
 
 /* ═══════════════════════════════════════
    DELETE
 ═══════════════════════════════════════ */
 function openDelete(id) {
-  document.getElementById('delete-booking-id').value = id;
-  openModal('modal-delete');
+  showToast('Delete from Google Sheet directly.', 'info');
 }
 
 function confirmDelete() {
-  const id = parseInt(document.getElementById('delete-booking-id').value);
-  bookings = bookings.filter(b => b.id !== id);
-  saveBookings();
   closeModal('modal-delete');
-  renderBookings();
-  updateStats();
-  updatePendingBadge();
-  renderRecentTable();
-  showToast('Booking deleted', 'info');
 }
 
 /* ═══════════════════════════════════════
@@ -1025,184 +1035,122 @@ function confirmDelete() {
 function buildClients() {
   const map = {};
   bookings.forEach(b => {
-    if (!map[b.phone]) {
-      map[b.phone] = { name:b.name, phone:b.phone, visits:[], services:{} };
+    const key = b.phone || b.name;
+    if (!map[key]) {
+      map[key] = { name:b.name, phone:b.phone, visits:[], services:{} };
     }
-    map[b.phone].visits.push(b.date);
-    map[b.phone].services[b.service] = (map[b.phone].services[b.service]||0)+1;
+    map[key].visits.push(b);
+    map[key].services[b.service] = (map[key].services[b.service] || 0) + 1;
   });
-  return Object.values(map).map(c => {
-    const sorted = c.visits.sort((a,b) => new Date(b)-new Date(a));
-    const fav    = Object.entries(c.services).sort((a,b)=>b[1]-a[1])[0]?.[0] || '—';
-    return { ...c, lastVisit: sorted[0]||'—', count: c.visits.length, fav };
-  }).sort((a,b) => new Date(b.lastVisit)-new Date(a.lastVisit));
+  return Object.values(map);
 }
 
-let clientSearchQ = '';
 function renderClients() {
-  refreshBookingsFromStorage();
-  const list  = buildClients().filter(c =>
-    !clientSearchQ ||
-    c.name.toLowerCase().includes(clientSearchQ) ||
-    c.phone.includes(clientSearchQ)
-  );
   const tbody = document.getElementById('clients-tbody');
-  tbody.innerHTML = list.length ? list.map(c => `
-    <tr>
-      <td class="bold">${c.name}</td>
-      <td>${c.phone}</td>
-      <td><span style="color:var(--gold)">${c.count}</span></td>
-      <td>${c.lastVisit !== '—' ? formatDate(c.lastVisit) : '—'}</td>
-      <td style="color:var(--text-mid);font-size:.82rem">${c.fav}</td>
-      <td>
-        <div class="action-btns">
-          <button class="btn-action btn-edit" onclick="openClientDetail('${c.phone}')">View</button>
-          <button class="btn-action btn-delete" onclick="deleteClient('${c.phone}')">Remove</button>
-        </div>
-      </td>
-    </tr>`).join('') :
-    '<tr class="empty-row"><td colspan="6">No clients found</td></tr>';
+  const clients = buildClients().sort((a,b) => b.visits.length - a.visits.length);
+  tbody.innerHTML = clients.length ? clients.map(c => {
+    const fav = Object.entries(c.services).sort((a,b) => b[1]-a[1])[0]?.[0] || '-';
+    const last = c.visits[0];
+    return `
+      <tr>
+        <td class="bold">${escapeHtml(c.name)}</td>
+        <td>${escapeHtml(c.phone)}</td>
+        <td>${c.visits.length}</td>
+        <td>${formatDate(last.date)}</td>
+        <td>${escapeHtml(fav)}</td>
+        <td><button class="btn-action btn-edit" onclick="openClientDetails('${escapeAttr(c.phone)}')">View</button></td>
+      </tr>`;
+  }).join('') : '<tr class="empty-row"><td colspan="6">No clients yet</td></tr>';
 }
 
 function searchClients() {
-  clientSearchQ = document.getElementById('client-search').value.toLowerCase();
   renderClients();
 }
 
-function openClientDetail(phone) {
-  const c  = buildClients().find(x => x.phone === phone);
-  if (!c) return;
+function openClientDetails(phone) {
   const clientBookings = bookings.filter(b => b.phone === phone);
-  document.getElementById('client-modal-name').textContent = c.name;
-  document.getElementById('client-modal-body').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1.2rem">
-      <div style="background:var(--dark3);border-radius:8px;padding:.9rem">
-        <div style="font-size:.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:.3rem">Phone</div>
-        <div style="color:var(--text)">${c.phone}</div>
-      </div>
-      <div style="background:var(--dark3);border-radius:8px;padding:.9rem">
-        <div style="font-size:.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:.3rem">Total Visits</div>
-        <div style="color:var(--gold);font-family:'Cormorant Garamond',serif;font-size:1.5rem">${c.count}</div>
-      </div>
-    </div>
-    <div style="font-size:.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:.6rem">Booking History</div>
-    <div style="display:flex;flex-direction:column;gap:.4rem;max-height:240px;overflow-y:auto">
-      ${clientBookings.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(b=>`
-        <div style="display:flex;justify-content:space-between;align-items:center;background:var(--dark3);border-radius:8px;padding:.7rem .9rem;font-size:.83rem">
-          <span style="color:var(--text)">${b.service}</span>
-          <span style="color:var(--text-dim)">${formatDate(b.date)} · ${b.time}</span>
-          ${statusBadge(b.status)}
-        </div>`).join('')}
-    </div>`;
-  openModal('modal-client');
-}
-
-function deleteClient(phone) {
-  if (!confirm('Remove all bookings for this client?')) return;
-  bookings = bookings.filter(b => b.phone !== phone);
-  saveBookings();
-  renderClients();
-  updateStats();
-  updatePendingBadge();
-  renderRecentTable();
-  showToast('Client removed', 'info');
+  if (!clientBookings.length) return;
+  const c = clientBookings[0];
+  alert(`Client: ${c.name}\nPhone: ${phone}\nBookings: ${clientBookings.length}`);
 }
 
 /* ═══════════════════════════════════════
    SETTINGS
 ═══════════════════════════════════════ */
 function changePassword() {
-  const cur  = document.getElementById('pw-current').value;
-  const nw   = document.getElementById('pw-new').value;
-  const conf = document.getElementById('pw-confirm').value;
-  if (cur !== storedPassword)  { showToast('Current password is incorrect','error'); return; }
-  if (nw.length < 6)           { showToast('New password must be at least 6 characters','error'); return; }
-  if (nw !== conf)             { showToast('Passwords do not match','error'); return; }
-  storedPassword = nw;
-  localStorage.setItem('lx_pw', nw);
-  document.getElementById('pw-current').value = '';
-  document.getElementById('pw-new').value     = '';
-  document.getElementById('pw-confirm').value = '';
-  showToast('Password updated successfully!', 'success');
+  const current = document.getElementById('pw-current').value;
+  const pw1 = document.getElementById('pw-new').value;
+  const pw2 = document.getElementById('pw-confirm').value;
+  if (current !== storedPassword) { showToast('Current password is incorrect','error'); return; }
+  if (pw1.length < 4) { showToast('Password must be at least 4 characters','error'); return; }
+  if (pw1 !== pw2) { showToast('Passwords do not match','error'); return; }
+  localStorage.setItem('lx_pw', pw1);
+  storedPassword = pw1;
+  showToast('Password changed on this browser', 'success');
 }
 
+function clearAllBookings() {
+  showToast('Clear bookings from Google Sheet directly.', 'info');
+}
+
+/* ═══════════════════════════════════════
+   EXPORT
+═══════════════════════════════════════ */
 function exportCSV() {
-  const header = ['ID','Name','Phone','Service','Date','Time','Payment','Status','Notes'];
-  const rows   = bookings.map(b => [b.id,b.name,b.phone,b.service,b.date,b.time,b.payment,b.status,b.notes||''].map(v=>`"${v}"`).join(','));
-  const csv    = [header.join(','), ...rows].join('\n');
-  const blob   = new Blob([csv], {type:'text/csv'});
-  const url    = URL.createObjectURL(blob);
-  const a      = document.createElement('a');
+  const headers = 'ID,Name,Phone,Email,Service,Date,Time,Payment,Status,Notes\n';
+  const rows = bookings.map(b => [
+    b.id,b.name,b.phone,b.email,b.service,b.date,b.time,b.payment,b.status,b.notes||''
+  ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
+  const blob = new Blob([headers + rows.join('\n')], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
   a.href = url; a.download = 'luxe_beauty_bookings.csv'; a.click();
   URL.revokeObjectURL(url);
-  showToast('CSV downloaded!', 'success');
-}
-
-function clearAllData() {
-  if (!confirm('This will delete all bookings. Are you sure?')) return;
-  bookings = [];
-  nextId   = 1;
-  saveBookings();
-  initDashboard();
-  renderBookings();
-  renderClients();
-  showToast('All data cleared', 'info');
 }
 
 /* ═══════════════════════════════════════
-   MODAL HELPERS
+   HELPERS
 ═══════════════════════════════════════ */
-function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function formatDate(d) {
+  if (!d) return '-';
+  const date = new Date(d);
+  if (isNaN(date)) return d;
+  return date.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+function statusBadge(s) {
+  s = s || 'pending';
+  return `<span class="badge badge-${escapeAttr(s)}">${s.charAt(0).toUpperCase()+s.slice(1)}</span>`;
+}
+
+function paymentBadge(p) {
+  p = p || 'cash';
+  return `<span class="badge badge-${escapeAttr(p)}">${p === 'instapay' ? 'InstaPay' : 'Cash'}</span>`;
+}
+
+function escapeHtml(v) {
+  return String(v || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function escapeAttr(v) {
+  return escapeHtml(v).replace(/"/g, '&quot;');
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
-document.querySelectorAll('.modal-overlay').forEach(m => {
-  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
-});
-
-/* ═══════════════════════════════════════
-   TOAST
-═══════════════════════════════════════ */
 function showToast(msg, type='info') {
-  const icons = { success:'✓', error:'✕', info:'ℹ' };
-  const el    = document.createElement('div');
-  el.className = `toast ${type}`;
-  el.innerHTML = `<span class="toast-icon">${icons[type]}</span><span>${msg}</span>`;
-  document.getElementById('toast-container').appendChild(el);
-  setTimeout(() => el.remove(), 3500);
+  const container = document.getElementById('toast-container');
+  if (!container) { alert(msg); return; }
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  toast.innerHTML = `<span class="toast-icon">${type === 'success' ? '✓' : type === 'error' ? '!' : 'ℹ'}</span><span>${escapeHtml(msg)}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
 }
 
-/* ═══════════════════════════════════════
-   UTILITIES
-═══════════════════════════════════════ */
-function formatDate(str) {
-  if (!str || str === '—') return '—';
-  try {
-    return new Date(str).toLocaleDateString('en-EG', {day:'numeric',month:'short',year:'numeric'});
-  } catch { return str; }
-}
-
-function statusBadge(status) {
-  const map = {
-    pending:   '<span class="badge badge-pending">Pending</span>',
-    confirmed: '<span class="badge badge-confirmed">Confirmed</span>',
-    cancelled: '<span class="badge badge-cancelled">Cancelled</span>',
-  };
-  return map[status] || status;
-}
-
-function paymentBadge(payment) {
-  return payment === 'instapay'
-    ? '<span class="badge badge-instapay">InstaPay</span>'
-    : '<span class="badge badge-cash">Cash</span>';
-}
-
-window.addEventListener('storage', e => {
-  if (e.key === 'lx_bookings') {
-    refreshBookingsFromStorage();
-    initDashboard();
-    renderBookings();
-    renderClients();
-  }
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
 });
 
 </script>
