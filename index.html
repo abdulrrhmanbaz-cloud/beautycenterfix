@@ -679,6 +679,7 @@ html[lang=ar] .footer-col h4{font-family:'Tajawal',sans-serif;letter-spacing:0;f
       <a href="tel:+201XXXXXXXXX">+20 1X XXXX XXXX</a>
       <a href="mailto:hello@luxebeauty.com">hello@luxebeauty.com</a>
       <a href="https://wa.me/201XXXXXXXXX" target="_blank" data-en="WhatsApp Us" data-ar="واتساب">WhatsApp Us</a>
+    <a href="admin.html" data-en="Admin Dashboard" data-ar="لوحة الإدارة">Admin Dashboard</a>
     </div>
     <div class="footer-col">
       <h4 data-en="Hours" data-ar="ساعات العمل">Hours</h4>
@@ -711,33 +712,29 @@ function setLang(newLang) {
   html.lang = lang;
   html.dir  = lang === 'ar' ? 'rtl' : 'ltr';
 
-  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
-  document.getElementById('btn-ar').classList.toggle('active', lang === 'ar');
+  const btnEn = document.getElementById('btn-en');
+  const btnAr = document.getElementById('btn-ar');
+  if (btnEn) btnEn.classList.toggle('active', lang === 'en');
+  if (btnAr) btnAr.classList.toggle('active', lang === 'ar');
 
-  // translate all [data-en] elements
   document.querySelectorAll('[data-en]').forEach(el => {
     const val = el.getAttribute('data-' + lang);
     if (val === null) return;
-    if (val.includes('<') || el.innerHTML.match(/<[a-z]/i)) {
-      el.innerHTML = val;
-    } else {
-      el.textContent = val;
-    }
+    if (val.includes('<') || el.innerHTML.match(/<[a-z]/i)) el.innerHTML = val;
+    else el.textContent = val;
   });
 
-  // translate <option> elements
   document.querySelectorAll('option[data-en]').forEach(opt => {
     const val = opt.getAttribute('data-' + lang);
     if (val) opt.textContent = val;
   });
 
-  // placeholders
-  document.getElementById('inp-name').placeholder  = lang === 'ar' ? 'مثال: سارة أحمد'      : 'e.g. Sara Ahmed';
-  document.getElementById('inp-phone').placeholder = lang === 'ar' ? '+20 1X XXXX XXXX'      : '+20 1X XXXX XXXX';
+  const name = document.getElementById('inp-name');
+  const phone = document.getElementById('inp-phone');
+  if (name) name.placeholder  = lang === 'ar' ? 'مثال: سارة أحمد' : 'e.g. Sara Ahmed';
+  if (phone) phone.placeholder = '+20 1X XXXX XXXX';
 
-  // re-render time slots in correct language
   renderSlots();
-
   try { localStorage.setItem('luxe-lang', lang); } catch(e) {}
 }
 
@@ -745,14 +742,15 @@ function setLang(newLang) {
    NAV
 ═══════════════════════════════════ */
 window.addEventListener('scroll', () => {
-  document.getElementById('main-header').classList.toggle('scrolled', window.scrollY > 40);
+  const header = document.getElementById('main-header');
+  if (header) header.classList.toggle('scrolled', window.scrollY > 40);
 });
 
 function toggleMenu() {
-  document.getElementById('nav-links').classList.toggle('open');
+  const links = document.getElementById('nav-links');
+  if (links) links.classList.toggle('open');
 }
 
-// smooth scroll
 document.addEventListener('click', e => {
   const a = e.target.closest('a[href^="#"]');
   if (!a) return;
@@ -760,7 +758,8 @@ document.addEventListener('click', e => {
   if (target) {
     e.preventDefault();
     target.scrollIntoView({ behavior: 'smooth' });
-    document.getElementById('nav-links').classList.remove('open');
+    const links = document.getElementById('nav-links');
+    if (links) links.classList.remove('open');
   }
 });
 
@@ -789,13 +788,14 @@ function getDisabledIdx(dateStr) {
 }
 
 function renderSlots() {
-  const dateVal    = document.getElementById('booking-date').value;
-  const container  = document.getElementById('time-slots');
-  const disabledIdx = getDisabledIdx(dateVal);
-  const display    = lang === 'ar' ? SLOTS_AR : SLOTS_EN;
+  const dateInput = document.getElementById('booking-date');
+  const container = document.getElementById('time-slots');
+  const hidden = document.getElementById('selected-time');
+  if (!dateInput || !container || !hidden) return;
 
-  // remember previously selected slot
-  const prevVal = document.getElementById('selected-time').value;
+  const disabledIdx = getDisabledIdx(dateInput.value);
+  const display = lang === 'ar' ? SLOTS_AR : SLOTS_EN;
+  const prevVal = hidden.value;
 
   container.innerHTML = '';
   display.forEach((label, i) => {
@@ -808,17 +808,18 @@ function renderSlots() {
       div.addEventListener('click', () => {
         container.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
         div.classList.add('selected');
-        document.getElementById('selected-time').value = SLOTS_EN[i];
+        hidden.value = SLOTS_EN[i];
       });
     }
     container.appendChild(div);
   });
 }
 
-// initialise date
 const dateInput = document.getElementById('booking-date');
-dateInput.min = new Date().toISOString().split('T')[0];
-dateInput.addEventListener('change', renderSlots);
+if (dateInput) {
+  dateInput.min = new Date().toISOString().split('T')[0];
+  dateInput.addEventListener('change', renderSlots);
+}
 renderSlots();
 
 /* ═══════════════════════════════════
@@ -826,166 +827,93 @@ renderSlots();
 ═══════════════════════════════════ */
 function selectPayment(method) {
   selectedPayment = method;
-  document.getElementById('selected-payment').value = method;
+  const selected = document.getElementById('selected-payment');
+  if (selected) selected.value = method;
 
-  document.getElementById('pay-card-instapay').classList.toggle('selected', method === 'instapay');
-  document.getElementById('pay-card-cash').classList.toggle('selected', method === 'cash');
+  const ipCard = document.getElementById('pay-card-instapay');
+  const cashCard = document.getElementById('pay-card-cash');
+  const ipPanel = document.getElementById('panel-instapay');
+  const cashPanel = document.getElementById('panel-cash');
 
-  document.getElementById('panel-instapay').style.display = method === 'instapay' ? 'block' : 'none';
-  document.getElementById('panel-cash').style.display     = method === 'cash'      ? 'block' : 'none';
+  if (ipCard) ipCard.classList.toggle('selected', method === 'instapay');
+  if (cashCard) cashCard.classList.toggle('selected', method === 'cash');
+  if (ipPanel) ipPanel.style.display = method === 'instapay' ? 'block' : 'none';
+  if (cashPanel) cashPanel.style.display = method === 'cash' ? 'block' : 'none';
 }
 
 /* ═══════════════════════════════════
    COPY BUTTON
 ═══════════════════════════════════ */
 function copyField(spanId, btnId) {
-  const text = document.getElementById(spanId).textContent.trim();
-  const btn  = document.getElementById(btnId);
-
+  const span = document.getElementById(spanId);
+  const btn = document.getElementById(btnId);
+  if (!span || !btn) return;
+  const text = span.textContent.trim();
   const succeed = () => {
     btn.textContent = lang === 'ar' ? '✓ تم' : '✓ Copied!';
-    btn.style.background = 'rgba(37,211,102,.3)';
-    btn.style.color = '#7fff7f';
-    setTimeout(() => {
-      btn.textContent = btn.getAttribute('data-' + lang) || (lang === 'ar' ? 'نسخ' : 'Copy');
-      btn.style.background = '';
-      btn.style.color = '';
-    }, 2000);
+    setTimeout(() => btn.textContent = btn.getAttribute('data-' + lang) || (lang === 'ar' ? 'نسخ' : 'Copy'), 2000);
   };
-
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(succeed).catch(succeed);
-  } else {
-    const tmp = document.createElement('input');
-    tmp.value = text;
-    document.body.appendChild(tmp);
-    tmp.select();
-    document.execCommand('copy');
-    document.body.removeChild(tmp);
-    succeed();
-  }
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(succeed).catch(succeed);
+  else succeed();
 }
 
 /* ═══════════════════════════════════
-   BOOKING SUBMIT — GitHub Pages Safe Version
-   This version will NOT call /api on GitHub Pages, because GitHub Pages cannot run backend APIs.
-   It saves the booking in the browser and opens WhatsApp with the booking details.
+   BOOKING SUBMIT — linked to Admin without changing design
+   Shared storage key: lx_bookings
 ═══════════════════════════════════ */
-
-// Put your deployed backend API link here later if you deploy the backend, for example:
-// const DEPLOYED_API_URL = 'https://your-backend.onrender.com/api';
-const DEPLOYED_API_URL = '';
-
-const IS_GITHUB_PAGES = location.hostname.includes('github.io');
-const API_BASE_URL = DEPLOYED_API_URL || (IS_GITHUB_PAGES ? '' : '/api');
-
-function saveBookingLocally(booking) {
-  const key = 'luxe-beauty-bookings';
-  const old = JSON.parse(localStorage.getItem(key) || '[]');
-  old.push({
-    id: Date.now().toString(),
-    status: 'Pending',
-    createdAt: new Date().toISOString(),
-    ...booking
-  });
-  localStorage.setItem(key, JSON.stringify(old));
-}
-
-function openWhatsAppBooking(booking) {
-  // Replace this with the real salon WhatsApp number, without + or spaces.
-  const whatsappNumber = '201XXXXXXXXX';
-  const message = `New Booking Request:%0A%0A` +
-    `Name: ${encodeURIComponent(booking.firstName)}%0A` +
-    `Email: ${encodeURIComponent(booking.email)}%0A` +
-    `Phone: ${encodeURIComponent(booking.phone)}%0A` +
-    `Service: ${encodeURIComponent(booking.service)}%0A` +
-    `Date: ${encodeURIComponent(booking.date)}%0A` +
-    `Time: ${encodeURIComponent(booking.time)}%0A` +
-    `Payment: ${encodeURIComponent(booking.paymentMethod)}`;
-  window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
-}
-
-
-document.getElementById('booking-form').addEventListener('submit', async function(e) {
+document.getElementById('booking-form').addEventListener('submit', function(e) {
   e.preventDefault();
 
-  const formData = {
-    firstName: document.getElementById('inp-name').value,
-    email: document.getElementById('inp-email').value,
-    phone: document.getElementById('inp-phone').value,
+  if (!document.getElementById('selected-time').value) {
+    alert(lang === 'ar' ? 'يرجى اختيار وقت مناسب.' : 'Please select a preferred time slot.');
+    return;
+  }
+
+  if (!selectedPayment) {
+    alert(lang === 'ar' ? 'يرجى اختيار طريقة الدفع.' : 'Please select a payment method.');
+    return;
+  }
+
+  const booking = {
+    id: Date.now(),
+    name: document.getElementById('inp-name').value.trim(),
+    email: document.getElementById('inp-email').value.trim(),
+    phone: document.getElementById('inp-phone').value.trim(),
     service: document.getElementById('inp-service').value,
     date: document.getElementById('booking-date').value,
     time: document.getElementById('selected-time').value,
-    paymentMethod: selectedPayment || 'cash',
-    description: 'Website Booking'
+    payment: selectedPayment,
+    paymentMethod: selectedPayment,
+    status: 'pending',
+    notes: '',
+    createdAt: new Date().toISOString()
   };
 
-  try {
-
-    const response = await fetch('/api/bookings', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(formData)
-    });
-
-    const data = await response.json();
-
-    if(!response.ok){
-      alert(data.error || 'Booking failed');
-      return;
-    }
-
-    alert('Booking Confirmed Successfully');
-
-    document.getElementById('booking-form').reset();
-
-  } catch(err){
-    console.error(err);
-    alert('Server connection failed');
+  if (!booking.name || !booking.email || !booking.phone || !booking.service || !booking.date) {
+    alert(lang === 'ar' ? 'من فضلكِ املئي كل البيانات المطلوبة.' : 'Please complete all required fields.');
+    return;
   }
-});
 
+  const bookings = JSON.parse(localStorage.getItem('lx_bookings') || '[]');
+  bookings.unshift(booking);
+  localStorage.setItem('lx_bookings', JSON.stringify(bookings));
 
-      const contentType = response.headers.get('content-type') || '';
-      if (!contentType.includes('application/json')) {
-        throw new Error('The booking API returned HTML, not JSON. Check your backend URL.');
-      }
+  const successText = lang === 'ar'
+    ? `شكرًا ${booking.name}! تم استلام حجزك وسيظهر في لوحة الأدمن.`
+    : `Thank you, ${booking.name}! Your booking was received and it will appear in the admin dashboard.`;
 
-      const data = await response.json();
-      if (!response.ok) {
-        const errorMsg = data.error || data.errors?.[0]?.msg || 'Failed to create booking';
-        alert(lang === 'ar' ? 'خطأ: ' + errorMsg : 'Error: ' + errorMsg);
-        return;
-      }
-    } else {
-      // Static GitHub Pages mode: no backend available.
-      saveBookingLocally(formData);
-      openWhatsAppBooking(formData);
-    }
+  document.getElementById('success-text').textContent = successText;
+  document.getElementById('booking-form-wrap').style.display = 'none';
+  document.getElementById('success-msg').style.display = 'block';
 
-    const msgs = {
-      instapay: {
-        en: 'Thank you! Your booking request was received. WhatsApp will open so you can send the request to the salon.',
-        ar: 'شكرًا لكِ! تم تسجيل طلب الحجز. سيفتح واتساب لإرسال الطلب للصالون.'
-      },
-      cash: {
-        en: "Thank you! Your booking request was received. WhatsApp will open so you can send the request to the salon.",
-        ar: 'شكرًا لكِ! تم تسجيل طلب الحجز. سيفتح واتساب لإرسال الطلب للصالون.'
-      }
-    };
-
-    document.getElementById('success-text').textContent = msgs[selectedPayment][lang];
-    document.getElementById('booking-form-wrap').style.display = 'none';
-    document.getElementById('success-msg').style.display = 'block';
-
-  } catch (error) {
-    console.error('Booking error:', error);
-    alert(lang === 'ar'
-      ? 'حدث خطأ في الحجز. تأكدي من رابط الباك إند أو استخدمي نسخة GitHub المعدلة.'
-      : 'Booking error. Please check the backend API link or use the GitHub Pages fixed version.');
-  }
+  this.reset();
+  document.getElementById('selected-time').value = '';
+  document.getElementById('selected-payment').value = '';
+  selectedPayment = '';
+  document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+  document.querySelectorAll('.pay-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('panel-instapay').style.display = 'none';
+  document.getElementById('panel-cash').style.display = 'none';
 });
 
 /* ═══════════════════════════════════
